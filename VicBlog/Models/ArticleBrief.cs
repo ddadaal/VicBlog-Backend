@@ -28,14 +28,10 @@ namespace VicBlog.Models
         [NotMapped]
         public double Rate { get; set; }
 
-        [NotMapped]
-        public int PV { get; set; }
-
         public ArticleBrief LoadTheRest(BlogContext context)
         {
             Tags = context.TagLinks.Where(x => x.ArticleID == ID).Select(x => x.TagName).ToArray();
             Rate = context.Rates.Where(x => x.ArticleID == ID).Select(x => x.Score).Average();
-            PV = context.ArticlePVs.Where(x => x.ArticleID == ID).Count();
             return this;
         }
 
@@ -47,11 +43,6 @@ namespace VicBlog.Models
         public ArticleBrief LoadTags(BlogContext context)
         {
             Tags = context.TagLinks.Where(x => x.ArticleID == ID).Select(x => x.TagName).ToArray();
-            return this;
-        }
-        public ArticleBrief LoadPV(BlogContext context)
-        {
-            PV = context.ArticlePVs.Where(x => x.ArticleID == ID).Count();
             return this;
         }
 

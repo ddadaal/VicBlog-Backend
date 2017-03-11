@@ -68,8 +68,6 @@ namespace VicBlog.Models
         public string[] Tags { get; set; }
         [DataMember(Name = "category")]
         public string Category { get; set; }
-        [DataMember(Name = "pv")]
-        public int PV { get; set; }
 
         public ArticleBriefRequestModel(ArticleBrief brief)
         {
@@ -81,7 +79,6 @@ namespace VicBlog.Models
             Category = brief.Category;
             Tags = brief.Tags;
             Rate = brief.Rate;
-            PV = brief.PV;
         }
     }
 
@@ -171,8 +168,6 @@ namespace VicBlog.Models
         public string[] Tags { get; set; }
         [DataMember(Name = "content")]
         public string Content { get; set; }
-        [DataMember(Name = "pv")]
-        public int PV { get; set; }
         [DataMember(Name = "rate")]
         public double Rate { get; set; }
 
@@ -187,7 +182,6 @@ namespace VicBlog.Models
                 Category = brief.Category;
             Content = content;
             Rate = brief.Rate;
-            PV = brief.PV;
         }
 
 

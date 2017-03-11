@@ -231,10 +231,10 @@ namespace VicBlog.Controllers
         }
 
         [HttpGet]
-        [Route("/pv/{articleID}")]
+        [Route("/pv")]
         [SwaggerOperation("PVArticleIDGet")]
         [SwaggerResponse(200, type: typeof(int), description: "Returns current PV for a article.")]
-        public IActionResult PVArticleIDGet([FromRoute]string articleID)
+        public IActionResult PVArticleIDGet([FromQuery(Name = "ID")]string articleID)
         {
             return Json(context.ArticlePVs.Where(x => x.ArticleID == articleID).Count());
         }
@@ -297,9 +297,9 @@ namespace VicBlog.Controllers
             brief.Title = newArticle.Title;
             brief.Category = newArticle.Category;
             context.TagLinks.RemoveRange(context.TagLinks.Where(x => x.ArticleID == articleID));
-            context.TagLinks.AddRange(from x in newArticle.Tags select new TagLink() { ArticleID = articleID, TagName = x });
+            context.TagLinks.AddRange(newArticle.Tags.Select(x=> new TagLink() { ArticleID = articleID, TagName = x }));
 
-            brief.LastEditedTime = DateTime.Now.ToUniversalTime();
+            brief.LastEditedTime = DateTime.Now;
             await context.SaveChangesAsync();
 
 
