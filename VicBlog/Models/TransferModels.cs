@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace VicBlog.Models
 {
     [DataContract]
-    public class ArticlePatchingModel
+    public class ArticlePatchModel
     {
         [DataMember(Name = "title")]
         public string Title { get; set; }
@@ -23,7 +23,7 @@ namespace VicBlog.Models
     }
 
     [DataContract]
-    public class ArticleCreatingModel
+    public class ArticleCreationModel
     {
         [DataMember(Name = "title")]
         public string Title { get; set; }
@@ -39,7 +39,7 @@ namespace VicBlog.Models
     }
 
     [DataContract]
-    public class CommentCreatingModel
+    public class CommentCreationModel
     {
         [DataMember(Name = "articleID")]
         public string ArticleID { get; set; }

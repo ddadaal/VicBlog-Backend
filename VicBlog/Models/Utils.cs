@@ -33,21 +33,11 @@ namespace VicBlog.Models
         public static User GetUser(string token, BlogContext context)
         {
             TokenModel convertedToken = JWT.Decode<TokenModel>(token, key: Encoding.ASCII.GetBytes(USER_TOKEN_KEY), alg: ALGORITHM);
-            if ((convertedToken.LoginTime - DateTime.Now).Seconds >= LOGIN_EXPIRE_SECONDS)
-            {
-                throw new TokenOutdatedException();
-            }
-            return context.Users.Find(convertedToken.Username);
-        }
-
-        public async static Task<User> GetUserAsync(string token, BlogContext context)
-        {
-            TokenModel convertedToken = JWT.Decode<TokenModel>(token, key: Encoding.ASCII.GetBytes(USER_TOKEN_KEY), alg: ALGORITHM);
             if ((DateTime.Now - convertedToken.LoginTime).Seconds >= LOGIN_EXPIRE_SECONDS)
             {
                 throw new TokenOutdatedException();
             }
-            return await context.Users.FindAsync(convertedToken.Username);
+            return context.Users.Find(convertedToken.Username);
         }
 
         public static string ComputeMD5(this string rawString)

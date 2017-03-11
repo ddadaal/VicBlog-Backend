@@ -38,7 +38,7 @@ namespace VicBlog.Controllers
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -74,12 +74,12 @@ namespace VicBlog.Controllers
 
         [HttpDelete]
         [Route("/upload")]
-        public async Task<IActionResult> UploadDelte([FromHeader]string token, [FromBody]string filename)
+        public IActionResult UploadDelte([FromHeader]string token, [FromBody]string filename)
         {
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -158,7 +158,7 @@ namespace VicBlog.Controllers
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -261,12 +261,12 @@ namespace VicBlog.Controllers
         [SwaggerResponse(404, description: "Article specified by articleID is not found")]
         [SwaggerResponse(403, description: "Token outdated.")]
         [SwaggerResponse(401, description: "User token is invalid or operator is not the author or operator is not an admin.")]
-        public async Task<IActionResult> ArticlesArticleIDPatch([FromHeader]string token, [FromRoute]string articleID, [FromBody]ArticlePatchingModel newArticle)
+        public async Task<IActionResult> ArticlesArticleIDPatch([FromHeader]string token, [FromRoute]string articleID, [FromBody]ArticlePatchModel newArticle)
         {
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -407,7 +407,7 @@ namespace VicBlog.Controllers
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -468,7 +468,7 @@ namespace VicBlog.Controllers
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -559,12 +559,12 @@ namespace VicBlog.Controllers
         [SwaggerResponse(404, description: "Article specified by articleID is not found.")]
         [SwaggerResponse(401, description: "User token is not valid.")]
         [SwaggerResponse(403, description: "Token outdated.")]
-        public async Task<IActionResult> CommentsArticleIDPost([FromHeader]string token, [FromBody]CommentCreatingModel data)
+        public async Task<IActionResult> CommentsArticleIDPost([FromHeader]string token, [FromBody]CommentCreationModel data)
         {
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token,context);
+                user = Utils.GetUser(token,context);
             }
             catch (TokenOutdatedException)
             {
@@ -613,12 +613,12 @@ namespace VicBlog.Controllers
         [SwaggerResponse(201, type: typeof(ArticleRequestModel), description: "Created successfully. Returns new article.")]
         [SwaggerResponse(401, description: "User token is not valid or user is not an admin.")]
         [SwaggerResponse(403, description: "Token outdated.")]
-        public async Task<IActionResult> ArticlesArticlePOST([FromHeader]string token, [FromBody]ArticleCreatingModel data)
+        public async Task<IActionResult> ArticlesArticlePOST([FromHeader]string token, [FromBody]ArticleCreationModel data)
         {
             User user = null;
             try
             {
-                user = await Utils.GetUserAsync(token, context);
+                user = Utils.GetUser(token, context);
             }
             catch (TokenOutdatedException)
             {
@@ -786,6 +786,15 @@ namespace VicBlog.Controllers
         public IActionResult Index()
         {
             return Redirect("/swagger");
+        }
+
+        [HttpGet]
+        [Route("/test")]
+        [SwaggerOperation("TEST")]
+        [SwaggerResponse(200)]
+        public IActionResult TEST()
+        {
+            return Json(Utils.LOGIN_EXPIRE_SECONDS);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace VicBlog
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.${env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
             if (env.IsEnvironment("Development"))
             {
@@ -61,13 +61,13 @@ namespace VicBlog
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, BlogContext context)
         {
+            app.UseJwtBearerAuthentication();
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
-            
 
             app.UseCors(builder => builder.WithOrigins("http://localhost:8080","https://viccrubs.tk").AllowAnyHeader().AllowAnyMethod());
             app.UseStaticFiles();
@@ -77,8 +77,8 @@ namespace VicBlog
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VicBlog API"));
             app.UseMvc();
 
-            Models.Utils.USER_TOKEN_KEY = Configuration["USER_TOKEN_KEY"];
-            Models.Utils.LOGIN_EXPIRE_SECONDS = long.Parse(Configuration["LOGIN_EXPIRE_SECONDS"]);
+            Models.Utils.USER_TOKEN_KEY = Configuration["UserTokenKey"];
+            Models.Utils.LOGIN_EXPIRE_SECONDS = long.Parse(Configuration["LoginExpireSeconds"]);
 
             DbInitializer.Initialize(context, env.IsDevelopment());
 
