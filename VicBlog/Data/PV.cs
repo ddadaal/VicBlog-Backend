@@ -23,14 +23,14 @@ namespace VicBlog.Data
     {
         private BlogContext context = null;
         private List<ArticlePVModel> list = new List<ArticlePVModel>();
-        private static int maxLength = 1;
+        private static int maxLength = 3;
 
         public PV(BlogContext context)
         {
             this.context = context;
         }
 
-        public async void Add(string articleID, string ip)
+        public void Add(string articleID, string ip)
         {
             ArticlePVModel pv = new ArticlePVModel()
             {
@@ -38,18 +38,37 @@ namespace VicBlog.Data
                 IP = ip,
                 ViewTime = DateTime.Now.ToUniversalTime()
             };
-            list.Add(pv);
-            if (list.Count > maxLength)
-            {
-                await WriteIn();
-                list.Clear();
-            }
+
+
+            context.ArticlePVs.Add(pv);
+            context.SaveChanges();
+
+
+
+            //if (list.Count > maxLength)
+            //{
+            //    WriteIn();
+            //}
         }
 
-        private async Task WriteIn()
+        public int GetPV(string articleID)
+        {
+            return context.ArticlePVs.Where(x => articleID == x.ArticleID).Count();
+        }
+
+        public void DeleteAll(string articleID, bool autoSave = false)
+        {
+            context.ArticlePVs.RemoveRange(context.ArticlePVs.Where(x => articleID == x.ArticleID));
+            if (autoSave)
+                context.SaveChanges();
+        }
+
+
+        private void WriteIn()
         {
             context.ArticlePVs.AddRange(list);
-            await context.SaveChangesAsync();
+            context.SaveChanges();
+            list.Clear();
         }
     }
 }

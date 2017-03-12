@@ -1,9 +1,9 @@
 ﻿# CHANGELOG
 
-## [0.3.0] - 2017-3-11
+## [0.3.0] - 2017-3-12
 ### Added
-- PV count for every Article. A record will be added to database every time `/articles/{articleID}` is got.
-
+- PV count for every Article. A record will be added to database every time a get to `/articles/{articleID}` is made.
+- Filter by Created Time and Last Edited Time
 
 
 ## [0.2.5] - 2017-3-10

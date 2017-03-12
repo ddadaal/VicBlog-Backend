@@ -26,6 +26,14 @@ namespace VicBlog.Models
         public string TitleText { get; set; }
         [DataMember(Name = "order")]
         public ArticleBriefListOrder Order { get; set; }
+        [DataMember(Name = "createdTimeEnabled")]
+        public bool CreatedTimeEnabled { get; set; }
+        [DataMember(Name = "createdTimeRange")]
+        public long[] CreatedTimeRange { get; set; }
+        [DataMember(Name = "editedTimeEnabled")]
+        public bool EditedTimeEnabled { get; set; }
+        [DataMember(Name = "editedTimeRange")]
+        public long[] EditedTimeRange { get; set; }
 
     }
 }

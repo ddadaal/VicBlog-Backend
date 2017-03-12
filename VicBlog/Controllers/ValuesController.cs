@@ -25,10 +25,12 @@ namespace VicBlog.Controllers
 
         private readonly BlogContext context;
         private readonly IHostingEnvironment hostingEnv;
+        private PV pvObject;
         public DefaultApiController(BlogContext context, IHostingEnvironment hostingEnv)
         {
             this.context = context;
             this.hostingEnv = hostingEnv;
+            this.pvObject = new PV(context);
         }
 
         [HttpPost]
@@ -182,8 +184,12 @@ namespace VicBlog.Controllers
 
             context.TagLinks.RemoveRange(context.TagLinks.Where(x => x.ArticleID == articleID));
 
+            pvObject.DeleteAll(articleID);
 
             await context.SaveChangesAsync();
+
+
+
             return Json(article);
         }
 
@@ -213,13 +219,7 @@ namespace VicBlog.Controllers
                 return NotFound();
             }
 
-            context.ArticlePVs.Add(new ArticlePVModel()
-            {
-                ArticleID = articleID,
-                IP = Request.GetIPAddress(),
-                ViewTime = DateTime.Now
-            });
-            context.SaveChangesAsync();
+            pvObject.Add(articleID, Request.GetIPAddress());
           
             var result = new ArticleRequestModel(
                 brief.LoadTheRest(context),
@@ -236,7 +236,7 @@ namespace VicBlog.Controllers
         [SwaggerResponse(200, type: typeof(int), description: "Returns current PV for a article.")]
         public IActionResult PVArticleIDGet([FromQuery(Name = "ID")]string articleID)
         {
-            return Json(context.ArticlePVs.Where(x => x.ArticleID == articleID).Count());
+            return Json(pvObject.GetPV(articleID));
         }
 
 
@@ -326,6 +326,16 @@ namespace VicBlog.Controllers
             if (!string.IsNullOrEmpty(filter.TitleText))
             {
                 allData = allData.Where(x => x.Title.Contains(filter.TitleText));
+            }
+
+            if (filter.CreatedTimeEnabled && filter.CreatedTimeRange != null)
+            {
+                allData = allData.Where(x => x.SubmitTime.ToUnixUTCTime() >= filter.CreatedTimeRange[0] && x.SubmitTime.ToUnixUTCTime() <= filter.CreatedTimeRange[1]);
+            }
+
+            if (filter.EditedTimeEnabled && filter.EditedTimeRange != null)
+            {
+                allData = allData.Where(x => x.LastEditedTime.ToUnixUTCTime() >= filter.EditedTimeRange[0] && x.LastEditedTime.ToUnixUTCTime() <= filter.EditedTimeRange[1]);
             }
 
             var list = allData.ToList().Select(x => x.LoadTheRest(context));
