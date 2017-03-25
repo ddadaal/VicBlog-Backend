@@ -639,6 +639,11 @@ namespace VicBlog.Controllers
                 return Unauthorized();
             }
 
+            if (user.Role != Role.Admin)
+            {
+                return Unauthorized();
+            }
+
             string guid = Guid.NewGuid().ToString();
 
             DateTime now = DateTime.Now;

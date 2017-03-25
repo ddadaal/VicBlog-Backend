@@ -1,5 +1,10 @@
 ﻿# CHANGELOG
 
+## [0.3.1] - 2017-3-25
+### Fixed
+- Article Post now checks for `Admin` role.
+
+
 ## [0.3.0] - 2017-3-12
 ### Added
 - PV count for every Article. A record will be added to database every time a get to `/articles/{articleID}` is made.
