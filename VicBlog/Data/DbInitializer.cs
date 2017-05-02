@@ -9,7 +9,7 @@ namespace VicBlog
 {
     public static class DbInitializer
     {
-        public static void Initialize(BlogContext context, bool development)
+        public static void Initialize(BlogContext context, bool development, string password)
         {
             context.Database.EnsureCreated();
 
@@ -27,7 +27,7 @@ namespace VicBlog
             {
 
                 Username = "root",
-                Password = "root".ComputeMD5(),
+                Password = password.ComputeMD5(),
                 RegisterTime = DateTime.Now.ToUniversalTime(),
                 Role = Role.Admin
 

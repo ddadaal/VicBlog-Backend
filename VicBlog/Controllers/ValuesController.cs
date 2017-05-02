@@ -25,12 +25,11 @@ namespace VicBlog.Controllers
 
         private readonly BlogContext context;
         private readonly IHostingEnvironment hostingEnv;
-        private PV pvObject;
         public DefaultApiController(BlogContext context, IHostingEnvironment hostingEnv)
         {
             this.context = context;
             this.hostingEnv = hostingEnv;
-            this.pvObject = new PV(context);
+
         }
 
         [HttpPost]
@@ -184,7 +183,7 @@ namespace VicBlog.Controllers
 
             context.TagLinks.RemoveRange(context.TagLinks.Where(x => x.ArticleID == articleID));
 
-            pvObject.DeleteAll(articleID);
+            PV.DeleteAll(context, articleID);
 
             await context.SaveChangesAsync();
 
@@ -219,7 +218,7 @@ namespace VicBlog.Controllers
                 return NotFound();
             }
 
-            pvObject.Add(articleID, Request.GetIPAddress());
+            PV.Add(articleID, Request.GetIPAddress(),context);
           
             var result = new ArticleRequestModel(
                 brief.LoadTheRest(context),
@@ -236,7 +235,7 @@ namespace VicBlog.Controllers
         [SwaggerResponse(200, type: typeof(int), description: "Returns current PV for a article.")]
         public IActionResult PVArticleIDGet([FromQuery(Name = "ID")]string articleID)
         {
-            return Json(pvObject.GetPV(articleID));
+            return Json(PV.GetPV(articleID,context));
         }
 
 

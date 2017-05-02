@@ -1,5 +1,9 @@
 ﻿# CHANGELOG
 
+## [0.3.2] - 2017-5-2
+### Fixed
+- Attempts have been made to fix random crashes caused by writing PV.
+
 ## [0.3.1] - 2017-3-25
 ### Fixed
 - Article Post now checks for `Admin` role.

@@ -80,7 +80,8 @@ namespace VicBlog
             Models.Utils.USER_TOKEN_KEY = Configuration["UserTokenKey"];
             Models.Utils.LOGIN_EXPIRE_SECONDS = long.Parse(Configuration["LoginExpireSeconds"]);
 
-            DbInitializer.Initialize(context, env.IsDevelopment());
+
+            DbInitializer.Initialize(context, env.IsDevelopment(), Configuration["RootPassword"]);
 
         }
     }

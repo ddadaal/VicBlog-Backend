@@ -19,18 +19,10 @@ namespace VicBlog.Data
     }
 
 
-    public class PV
+    public static class PV
     {
-        private BlogContext context = null;
-        private List<ArticlePVModel> list = new List<ArticlePVModel>();
-        private static int maxLength = 3;
 
-        public PV(BlogContext context)
-        {
-            this.context = context;
-        }
-
-        public void Add(string articleID, string ip)
+        public static void Add(string articleID, string ip, BlogContext context)
         {
             ArticlePVModel pv = new ArticlePVModel()
             {
@@ -51,24 +43,17 @@ namespace VicBlog.Data
             //}
         }
 
-        public int GetPV(string articleID)
+        public static int GetPV(string articleID, BlogContext context)
         {
             return context.ArticlePVs.Where(x => articleID == x.ArticleID).Count();
         }
 
-        public void DeleteAll(string articleID, bool autoSave = false)
+        public static void DeleteAll(BlogContext context, string articleID, bool autoSave = false)
         {
             context.ArticlePVs.RemoveRange(context.ArticlePVs.Where(x => articleID == x.ArticleID));
             if (autoSave)
                 context.SaveChanges();
         }
 
-
-        private void WriteIn()
-        {
-            context.ArticlePVs.AddRange(list);
-            context.SaveChanges();
-            list.Clear();
-        }
     }
 }

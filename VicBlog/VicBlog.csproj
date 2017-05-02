@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Swagger\**" />
+    <Content Remove="Swagger\**" />
+    <EmbeddedResource Remove="Swagger\**" />
+    <None Remove="Swagger\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
