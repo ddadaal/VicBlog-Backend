@@ -12,17 +12,6 @@ namespace VicBlog
         public static void Initialize(BlogContext context, bool development, string password)
         {
             context.Database.EnsureCreated();
-
-            if (!development)
-            {
-                return;
-            }
-            if (context.Users.Any())
-            {
-                return;
-            }
-
-
             User root = new User()
             {
 
@@ -32,8 +21,21 @@ namespace VicBlog
                 Role = Role.Admin
 
             };
+            if (!context.Users.Any())
+            {
 
-            context.Users.Add(root);
+
+                context.Users.Add(root);
+                context.SaveChanges();
+            }
+
+            if (!development)
+            {
+                return;
+            }
+
+
+
 
             string guid = Guid.NewGuid().ToString();
 
