@@ -1,5 +1,15 @@
 ﻿# CHANGELOG
 
+## [0.4.0-beta1] - 2017-8-21
+### Changed
+- Database changed to SQL Server
+- Split methods in `ValueController` to seperated files.
+- Updated to .NET Core 2.0 & ASP.NET Core 2.0 with all other dependencies.
+
+### Others
+- Migrating to Microsoft Azure Web App.
+- Upload is migrating to `Qiniu Cloud`. Code related to upload is still not working.
+
 ## [0.3.2] - 2017-5-2
 ### Fixed
 - Attempts have been made to fix random crashes caused by writing PV.
@@ -20,7 +30,7 @@
 - Login Expire time. Can be set in `appsettings.(Production).json`. When token is invalid, a `TokenInvalidException` will be thrown, and 403 Forbidden will be returned.
 
 ### Changed
-- Modified Some stupid codes that may result in repeated database operations 
+- Modified some stupid codes that may result in repeated database operations 
 - Rewrite some models to be more intuitive
 
 
@@ -61,7 +71,7 @@
   - getting `User` from token
 
 ### Changed
-- Property `Category` is now a `string` instead of a List<string>
+- Property `Category` is now a `string` instead of a `List<string>`
 - Property `Username` is now the key of a `User` entity
 - Routing for getting comments of an article is now `/comment` with query `articleID`
 
