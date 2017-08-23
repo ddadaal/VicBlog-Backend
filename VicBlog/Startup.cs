@@ -25,8 +25,10 @@ namespace VicBlog
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            // .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile("Configs/appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("Configs/QiniuConfig.json")
+                .AddJsonFile($"Configs/appsettings.{env.EnvironmentName}.json", optional: true);
+
 
             if (env.IsDevelopment())
             {
