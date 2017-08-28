@@ -1,5 +1,14 @@
 ﻿# CHANGELOG
 
+## [0.4.0] - 2017-8-28
+### Fixed
+- Upload is now working. 
+
+### Others
+- Migrating to Microsoft Azure Web App.
+- Upload is migrating to `Qiniu Cloud`.
+
+
 ## [0.4.0-beta1] - 2017-8-21
 ### Changed
 - Database changed to SQL Server

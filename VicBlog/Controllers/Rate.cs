@@ -48,6 +48,8 @@ namespace VicBlog.Controllers
             {
                 return Unauthorized();
             }
+
+
             var brief = await context.ArticleBriefs.FindAsync(articleID);
             if (brief == null)
             {

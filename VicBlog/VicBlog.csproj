@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <Optimize>false</Optimize>
+    <WarningLevel>0</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,11 @@
     <Content Remove="Swagger\**" />
     <EmbeddedResource Remove="Swagger\**" />
     <None Remove="Swagger\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Properties\PublishProfiles\VicBlog - Web Deploy.pubxml" />
+    <None Remove="Properties\PublishProfiles\vicblogapi - Web Deploy.pubxml" />
   </ItemGroup>
 
   <ItemGroup>

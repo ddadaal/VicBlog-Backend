@@ -27,11 +27,11 @@ namespace VicBlog.Data
         {
             Auth = new Auth(new Mac(AccessKey, SecretKey));
         }
-        public string GetUpdateToken(string fileName)
+        public string GetUpdateToken(string filePath)
         {
             PutPolicy putPolicy = new PutPolicy()
             {
-                Scope = $"{BucketName}:{fileName}",
+                Scope = $"{BucketName}:{filePath}",
             };
 
             putPolicy.SetExpires(Deadline);
@@ -48,14 +48,14 @@ namespace VicBlog.Data
                 using (var data = new MultipartFormDataContent())
                 {
                     data.Add(new StreamContent(file.OpenReadStream()), "file", fileKey);
-                    data.Add(new StringContent(GetUpdateToken(file.FileName)), "token");
+                    data.Add(new StringContent(GetUpdateToken(fileKey)), "token");
                     data.Add(new StringContent(fileKey), "key");
                     var response = await client.PostAsync(PostUrl, data);
                     if (response.IsSuccessStatusCode)
                     {
                         return new QiniuUploadResponse()
                         {
-                            AccessUrl = $"{AccessUrl}{fileKey}",
+                            AccessUrl = $"{AccessUrl}/{fileKey}",
                             Success = true
                         };
 

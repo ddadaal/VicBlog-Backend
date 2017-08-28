@@ -7,17 +7,16 @@ using System.Text;
 using VicBlog.Data;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
+using VicBlog.Models;
 
-namespace VicBlog.Models
+namespace VicBlog
 {
-
-
     public static class Utils
     {
 
 
-        public static string USER_TOKEN_KEY;
-        public static long LOGIN_EXPIRE_SECONDS;
+        public static string UserTokenKey;
+        public static long LoginExpireSeconds;
         public const JwsAlgorithm ALGORITHM = JwsAlgorithm.HS256;
 
         public static long ToUnixUTCTime(this DateTime datetime)
@@ -32,8 +31,8 @@ namespace VicBlog.Models
 
         public static User GetUser(string token, BlogContext context)
         {
-            TokenModel convertedToken = JWT.Decode<TokenModel>(token, key: Encoding.ASCII.GetBytes(USER_TOKEN_KEY), alg: ALGORITHM);
-            if ((DateTime.Now - convertedToken.LoginTime).Seconds >= LOGIN_EXPIRE_SECONDS)
+            TokenModel convertedToken = JWT.Decode<TokenModel>(token, key: Encoding.ASCII.GetBytes(UserTokenKey), alg: ALGORITHM);
+            if ((DateTime.Now - convertedToken.LoginTime).Seconds >= LoginExpireSeconds)
             {
                 throw new TokenOutdatedException();
             }

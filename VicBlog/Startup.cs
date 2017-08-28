@@ -25,9 +25,10 @@ namespace VicBlog
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("Configs/appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("Configs/appsettings.json")
+                .AddJsonFile($"Configs/appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddJsonFile("Configs/QiniuConfig.json")
-                .AddJsonFile($"Configs/appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"Configs/QiniuConfig.{env.EnvironmentName}.json", optional: true);
 
 
             if (env.IsDevelopment())
@@ -74,17 +75,19 @@ namespace VicBlog
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            app.UseCors(builder => builder.WithOrigins("http://localhost:8080","https://viccrubs.tk").AllowAnyHeader().AllowAnyMethod());
-            app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod());
+
+
+            app.UseCors(builder => builder.WithOrigins("http://localhost:8080","http://viccrubs.tk").AllowAnyHeader().AllowAnyMethod());
             app.UseStaticFiles();
 
             app.UseSwagger();
 
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VicBlog API"));
+
             app.UseMvc();
 
-            Models.Utils.USER_TOKEN_KEY = Configuration["UserTokenKey"];
-            Models.Utils.LOGIN_EXPIRE_SECONDS = long.Parse(Configuration["LoginExpireSeconds"]);
+            Utils.UserTokenKey = Configuration["UserTokenKey"];
+            Utils.LoginExpireSeconds = long.Parse(Configuration["LoginExpireSeconds"]);
 
             DbInitializer.Initialize(context, env.IsDevelopment(), Configuration["RootPassword"]);
 

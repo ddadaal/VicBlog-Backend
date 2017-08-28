@@ -50,7 +50,7 @@ namespace VicBlog.Models
         {
             try
             {
-                return JWT.Encode(new TokenModel() { Username = Username, LoginTime = loginTime ?? DateTime.Now }, Encoding.ASCII.GetBytes(Utils.USER_TOKEN_KEY), Utils.ALGORITHM);
+                return JWT.Encode(new TokenModel() { Username = Username, LoginTime = loginTime ?? DateTime.Now }, Encoding.ASCII.GetBytes(Utils.UserTokenKey), Utils.ALGORITHM);
 
             }
             catch

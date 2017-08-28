@@ -18,9 +18,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace VicBlog.Controllers
 {
-    /// <summary>
-    /// 
-    /// </summary>
+
     public partial class DefaultApiController : Controller
     {
 
@@ -80,7 +78,7 @@ namespace VicBlog.Controllers
         [SwaggerResponse(200)]
         public IActionResult TEST()
         {
-            return Json(Utils.LOGIN_EXPIRE_SECONDS);
+            return Json(Utils.LoginExpireSeconds);
         }
     }
 }
