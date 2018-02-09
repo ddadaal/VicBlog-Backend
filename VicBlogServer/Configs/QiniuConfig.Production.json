@@ -1,0 +1,10 @@
+﻿{
+  "QiniuConfig": {
+    "AccessKey": "Cpy7FyqPSHONhEMDc_eM9bNfn9ppQZxMNLnhtkxy",
+    "SecretKey": "e76yvMk43t69__ZzglCNcDElNQh37NDdZkHD0Vtt",
+    "BucketName": "vicblog-storage",
+    "AccessUrl": "olaviw8n8.bkt.clouddn.com",
+    "PostUrl": "http://upload.qiniu.com/",
+    "Deadline": 10000
+  }
+}

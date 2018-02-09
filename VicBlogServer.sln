@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VicBlogServer", "VicBlogServer\VicBlogServer.csproj", "{2D1FB456-C8A4-40F1-85F5-5F3EC3EAAED6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VicBlogServer", "VicBlogServer\VicBlogServer.csproj", "{2D1FB456-C8A4-40F1-85F5-5F3EC3EAAED6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VicBlogServer.Test", "VicBlogServer.Test\VicBlogServer.Test.csproj", "{FAC597EF-765E-4250-986B-643346F63196}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{2D1FB456-C8A4-40F1-85F5-5F3EC3EAAED6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D1FB456-C8A4-40F1-85F5-5F3EC3EAAED6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D1FB456-C8A4-40F1-85F5-5F3EC3EAAED6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAC597EF-765E-4250-986B-643346F63196}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAC597EF-765E-4250-986B-643346F63196}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAC597EF-765E-4250-986B-643346F63196}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAC597EF-765E-4250-986B-643346F63196}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
