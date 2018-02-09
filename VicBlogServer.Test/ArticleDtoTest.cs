@@ -55,38 +55,13 @@ namespace VicBlogServer.Test
         private void InitializeDb()
         {
             var options = new DbContextOptionsBuilder<BlogContext>()
-                .UseInMemoryDatabase(databaseName: (new Random()).NextDouble().ToString())
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             context = new BlogContext(options);
             context.Database.EnsureCreated();
         }
 
-        [Fact]
-        public void Test()
-        {
-            ILoggerFactory factory = new LoggerFactory(new[]{ new ConsoleLoggerProvider((_, __) => true, true) });
-            BlogContext context = new BlogContext(new DbContextOptionsBuilder<BlogContext>()
-                .UseLoggerFactory(factory)
-                .UseSqlServer("Data Source=(localdb)\\ProjectsV13;Initial Catalog=TestDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False")
-                .Options);
-            context.Database.EnsureCreated();
-
-            ArticleFilterDto dto = new ArticleFilterDto()
-            {
-                TitleText = "123",
-                CreatedTimeRange = new long[] { 10, 20}
-            };
-            List<Article> retrievedArticles = dto.Execute(context.Articles);
-            Assert.Single(retrievedArticles);
-
-        }
-
-        public static void Main(string[] args)
-        {
-            new ArticleDtoTest().Test();
-            Console.ReadLine();
-        }
 
         [Fact]
         public void TestTag1()
