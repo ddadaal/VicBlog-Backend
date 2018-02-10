@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace VicBlogServer.Models.Dto
+namespace VicBlogServer.ViewModels.Dto
 {
     public class UserRegisterDto
     {

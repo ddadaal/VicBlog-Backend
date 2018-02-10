@@ -13,8 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using VicBlogServer.Configs;
-using VicBlogServer.Models;
-using VicBlogServer.Models.Dto;
+using VicBlogServer.DataService;
+using VicBlogServer.ViewModels.Dto;
 
 namespace VicBlogServer.Controllers
 {
@@ -31,6 +31,7 @@ namespace VicBlogServer.Controllers
         [HttpPost("Register")]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(UserLoginDto), description: "Login successful. Returns token, username, registerTime and role.")]
+        [SwaggerResponse(409, description: "Username already exists.")]
         [SwaggerResponse(400, description: "Problems occurred.")]
         public abstract Task<IActionResult> Register([FromQuery]UserRegisterDto model);
 
@@ -43,19 +44,12 @@ namespace VicBlogServer.Controllers
 
     public class AccountController : AccountControllerSpec
     {
-        private readonly SignInManager<User> signInManager;
-        private readonly UserManager<User> userManager;
-        private readonly RoleManager<Role> roleManager;
-        private readonly IConfiguration configuration;
+        private readonly IAccountDataService dataService;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager,IConfiguration configuration, RoleManager<Role> roleManager)
+        public AccountController(IAccountDataService dataService)
         {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.configuration = configuration;
-            this.roleManager = roleManager;
+            this.dataService = dataService;
 
-            InitializeRole().Wait();
         }
 
 
@@ -63,7 +57,7 @@ namespace VicBlogServer.Controllers
         {
             if (HttpContext.User.Identity.IsAuthenticated)
             {
-                var user = userManager.Users.FirstOrDefault(x => x.UserName == HttpContext.User.Identity.Name);
+                var user = await dataService.GetUser(HttpContext.User.Identity.Name);
                 return Json($"Authenticated.{user.UserName}");
             }
             else
@@ -72,32 +66,19 @@ namespace VicBlogServer.Controllers
             }
         }
 
-        private async Task InitializeRole()
-        {
-            await CreateRoleIfNotExist(Role.Admin);
-            await CreateRoleIfNotExist(Role.User);
-        }
-
-        private async Task CreateRoleIfNotExist(string roleName)
-        {
-            if (!(await roleManager.RoleExistsAsync(roleName)))
-            {
-                var role = new Role(roleName);
-                await roleManager.CreateAsync(role);
-            }
-        }
-
-        
-
         public override async Task<IActionResult> Login([FromQuery]UserLoginDto model)
         {
-            var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
-
-            if (result.Succeeded)
+            string username = model.Username;
+            var result = await dataService.Login(username, model.Password);
+            if (result)
             {
-                var user = userManager.Users.FirstOrDefault(x => x.UserName == model.Username);
-                string role = (await userManager.GetRolesAsync(user)).FirstOrDefault();
-                return Json(GenerateResponseDto(model.Username, role));
+                var role = await dataService.GetRole(username);
+                return Json(new UserLoginResponseDto()
+                {
+                    Token = Models.UserModel.GenerateToken(username),
+                    Role = role,
+                    Username = username
+                });
             }
             else
             {
@@ -106,57 +87,23 @@ namespace VicBlogServer.Controllers
 
         }
 
-        private UserLoginResponseDto GenerateResponseDto(string username, string role)
-        {
-            return new UserLoginResponseDto()
-            {
-                Token = GenerateJwtToken(username),
-                Role = role,
-                Username = username
-            };
-        }
-
-        private string GenerateJwtToken(string username)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, username)
-            };
-
-            var key = JwtConfig.Config.KeyObject;
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(JwtConfig.Config.ExpireDays);
-
-            var token = new JwtSecurityToken(
-                JwtConfig.Config.Issuer,
-                JwtConfig.Config.Issuer,
-                claims,
-                expires: expires,
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
         public override async Task<IActionResult> Register([FromQuery]UserRegisterDto model)
         {
-            var user = new User
-            {
-                UserName = model.Username,
-            };
-            var result = await userManager.CreateAsync(user, model.Password);
+            var username = model.Username;
+            var result = await dataService.Register(username, model.Password);
             
             if (result.Succeeded)
             {
-                var registeredUser = userManager.Users.FirstOrDefault(x => x.UserName == model.Username);
-                await userManager.AddToRoleAsync(registeredUser, Role.User);
-                await signInManager.SignInAsync(user, false);
-                return Json(GenerateResponseDto(model.Username, Role.User));
+                var role = await dataService.GetRole(username);
+                return Json(new UserLoginResponseDto()
+                {
+                    Token = Models.UserModel.GenerateToken(username),
+                    Role = role,
+                    Username = username
+                });
             } else
             {
-                IEnumerable<string> s = result.Errors.Select(x => x.Code);
-                var describer = new IdentityErrorDescriber();
-                if (s.Contains(describer.DuplicateUserName(model.Username).Code))
+                if (result.ContainsDuplicateUsernameError)
                 {
                     return StatusCode(StatusCodes.Status409Conflict);
                 }

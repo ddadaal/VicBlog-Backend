@@ -19,7 +19,8 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
 using Swashbuckle.AspNetCore.Swagger;
 using VicBlogServer.Configs;
-using VicBlogServer.Entitites;
+using VicBlogServer.Data;
+using VicBlogServer.DataService;
 using VicBlogServer.Models;
 
 namespace VicBlogServer
@@ -34,9 +35,7 @@ namespace VicBlogServer
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("Configs/appsettings.json")
-                .AddJsonFile($"Configs/appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("Configs/QiniuConfig.json")
-                .AddJsonFile($"Configs/QiniuConfig.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"Configs/appsettings.{env.EnvironmentName}.json", optional: true);
 
 
             if (env.IsDevelopment())
@@ -68,7 +67,7 @@ namespace VicBlogServer
 
             JwtConfig.Initialize(Configuration);
 
-            services.AddIdentity<User, Role>(options =>
+            services.AddIdentity<UserModel, Role>(options =>
                 {
                     options.Password.RequireDigit = false;
                     options.Password.RequiredLength = 0;
@@ -101,17 +100,22 @@ namespace VicBlogServer
                     };
                 });
 
+            services.AddScoped<IAccountDataService, AccountData>();
+            services.AddScoped<IArticleDataService, ArticleDataController>();
+            services.AddScoped<ITagDataService, ArticleTagDataController>();
+            services.AddScoped<ILikeDataService, ArticleLikeDataController>();
+            services.AddScoped<ICommentDataService, CommentDataController>();
 
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, BlogContext context, UserManager<User> userManager)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, BlogContext context, UserManager<UserModel> userManager)
         {
             if (env.IsDevelopment())
             {
