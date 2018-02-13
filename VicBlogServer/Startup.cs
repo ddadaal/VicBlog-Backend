@@ -21,6 +21,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using VicBlogServer.Configs;
 using VicBlogServer.Data;
 using VicBlogServer.DataService;
+using VicBlogServer.Filters;
 using VicBlogServer.Models;
 
 namespace VicBlogServer
@@ -57,6 +58,7 @@ namespace VicBlogServer
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "VicBlog API", Version = "0.5.0" });
+                c.AddSecurityDefinition("JWT Bearer", new ApiKeyScheme() { In = "header", Description = "Please insert JWT with \"Bearer\" into field", Name = "Authorization", Type = "apiKey" });
             });
             services.AddCors();
 
@@ -96,11 +98,12 @@ namespace VicBlogServer
                         ValidAudience = JwtConfig.Config.Issuer,
                         IssuerSigningKey = JwtConfig.Config.KeyObject,
                         ClockSkew = TimeSpan.Zero, // remove delay of token when expire
-                        NameClaimType = ClaimTypes.NameIdentifier
+                        NameClaimType = ClaimTypes.NameIdentifier,
+                        RoleClaimType = ClaimTypes.Role
                     };
                 });
 
-            services.AddScoped<IAccountDataService, AccountData>();
+            services.AddScoped<IAccountDataService, AccountDataController>();
             services.AddScoped<IArticleDataService, ArticleDataController>();
             services.AddScoped<ITagDataService, ArticleTagDataController>();
             services.AddScoped<ILikeDataService, ArticleLikeDataController>();

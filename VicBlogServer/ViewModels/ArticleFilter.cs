@@ -10,14 +10,14 @@ namespace VicBlogServer.ViewModels
 {
     public class ArticleFiler
     {
-        public List<string> Tags { get; set; }
+        public List<string> Tags { get; }
 
-        public string TitleText { get; set; }
+        public string TitleText { get; }
 
-        public long[] CreatedTimeRange { get; set; }
+        public List<long> CreatedTimeRange { get;  }
 
-        public long[] EditedTimeRange { get; set; }
+        public List<long> EditedTimeRange { get;  }
 
-        public long MinLike { get; set; }
+        public long MinLike { get; }
     }
 }

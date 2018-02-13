@@ -12,11 +12,12 @@ namespace VicBlogServer.Models
 {
     public class UserModel : IdentityUser
     {
-        public static string GenerateToken(string username)
+        public static string GenerateToken(string username, string role)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, username)
+                new Claim(ClaimTypes.NameIdentifier, username),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var key = JwtConfig.Config.KeyObject;

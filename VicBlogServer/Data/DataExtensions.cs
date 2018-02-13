@@ -9,7 +9,7 @@ using VicBlogServer.ViewModels;
 
 namespace VicBlogServer.Data
 {
-    public static class DataExtension
+    public static class DataExtensions
     {
     }
 }

@@ -23,45 +23,42 @@ namespace VicBlogServer.Data
 
         public IQueryable<D> Raw => dbSet;
 
-        public Task Add(D d)
+        public void Add(D d)
         {
             dbSet.Add(d);
-            return Task.CompletedTask;
         }
 
-        public Task AddRange(IEnumerable<D> data)
+        public void AddRange(IEnumerable<D> data)
         {
             dbSet.AddRange(data);
-            return Task.CompletedTask;
         }
 
-        public async Task<D> FindById(K id)
+        public async Task<D> FindByIdAsync(K id)
         {
             return await dbSet.FindAsync(id);
         }
 
-        public async Task Remove(K id)
+        public async Task RemoveAsync(K id)
         {
-            dbSet.Remove(await FindById(id));
+            dbSet.Remove(await FindByIdAsync(id));
         }
 
-        public async Task RemoveRange(IEnumerable<K> ids)
+        public async Task RemoveRangeAsync(IEnumerable<K> ids)
         {
             foreach (K id in ids)
             {
-                await Remove(id);
+                await RemoveAsync(id);
             }
         }
 
-        public async Task SaveChanges()
+        public async Task SaveChangesAsync()
         {
             await context.SaveChangesAsync();
         }
 
-        public Task Update(D d)
+        public void Update(D d)
         {
             dbSet.Update(d);
-            return Task.CompletedTask;
         }
 
 

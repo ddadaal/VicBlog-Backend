@@ -7,7 +7,7 @@ namespace VicBlogServer.ViewModels
 {
     public class ArticleLikeViewModel
     {
-        public DateTime Time { get; set; }
+        public DateTime LikeTime { get; set; }
         public string Username { get; set; }
     }
 }

@@ -53,7 +53,7 @@ namespace VicBlogServer.DataService
         /// </summary>
         /// <param name="username">Username</param>
         /// <returns>The user or null if no user with that username is found</returns>
-        Task<UserModel> GetUser(string username);
+        UserModel GetUser(string username);
 
         /// <summary>
         /// Gets a Role with username

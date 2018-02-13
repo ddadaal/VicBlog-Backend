@@ -22,14 +22,14 @@ namespace VicBlogServer.DataService
         /// </summary>
         /// <param name="d">Data</param>
         /// <returns>Nothing. Use this as an async method.</returns>
-        Task Add(D d);
+        void Add(D d);
 
         /// <summary>
         /// Adds a range of data.
         /// </summary>
         /// <param name="data">data</param>
         /// <returns>Nothing. Use this as an async method.</returns>
-        Task AddRange(IEnumerable<D> data);
+        void AddRange(IEnumerable<D> data);
 
         /// <summary>
         /// Finds an entity with key. Null will be returned if not found.
@@ -37,34 +37,33 @@ namespace VicBlogServer.DataService
         /// <param name="id">id</param>
         /// <returns>Nothing. Use this as an async method.</returns>
 
-        Task<D> FindById(K id);
+        Task<D> FindByIdAsync(K id);
 
         /// <summary>
         /// Removes an entity with key.
         /// </summary>
         /// <param name="id">id</param>
         /// <returns>Nothing. Use this as an async method.</returns>
-        Task Remove(K id);
+        Task RemoveAsync(K id);
 
         /// <summary>
         /// Removes a range of data.
         /// </summary>
         /// <param name="ids">all the ids</param>
         /// <returns></returns>
-        Task RemoveRange(IEnumerable<K> ids);
+        Task RemoveRangeAsync(IEnumerable<K> ids);
 
         /// <summary>
         /// Updates an entity.
         /// </summary>
         /// <param name="d">new data</param>
         /// <returns>Nothing. Use this as an async method.</returns>
-        Task Update(D d);
+        void Update(D d);
 
         /// <summary>
-        /// Calls underlying database to save the changes.
+        /// Asyncly Calls underlying database to save the changes.
         /// </summary>
         /// <returns></returns>
-        Task SaveChanges();
-
+        Task SaveChangesAsync();
     }
 }

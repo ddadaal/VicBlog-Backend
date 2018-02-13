@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using VicBlogServer.Data;
 using VicBlogServer.DataService;
+using VicBlogServer.Filters;
 using VicBlogServer.Models;
 using VicBlogServer.Utils;
 using VicBlogServer.ViewModels;
+using VicBlogServer.ViewModels.Dto;
 
 namespace VicBlogServer.Controllers
 {
@@ -20,8 +22,7 @@ namespace VicBlogServer.Controllers
     {
         [HttpGet]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(List<ArticleBriefViewModel>), 
-            description: "Filters articles")]
+        [SwaggerResponse(200, type: typeof(List<ArticleBriefViewModel>), description: "Filters articles")]
         public abstract Task<IActionResult> GetArticles();
 
         [HttpGet("Filter")]
@@ -32,34 +33,32 @@ namespace VicBlogServer.Controllers
 
         [HttpGet("Tags")]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(List<string>),
-            description: "Gets all tags")]
+        [SwaggerResponse(200, type: typeof(List<string>), description: "Gets all tags")]
         public abstract Task<IActionResult> GetTags();
 
         [HttpGet("{articleId}")]
+        [ArticleExists]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(ArticleModel),
-            description: "Gets an Article from articleId")]
-        [SwaggerResponse(400, type: typeof(ArticleModel),
-            description: "Found no article with that articleId")]
+        [SwaggerResponse(200, type: typeof(ArticleModel),description: "Gets an Article from articleId.")]
+        [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "Article id doesn't exist.")]
         public abstract Task<IActionResult> GetAnArticle([FromRoute]string articleId);
 
 
         [HttpDelete("{articleId}")]
         [SwaggerOperation]
+        [ArticleExists]
         [Authorize(Roles = Role.Admin)]
         [SwaggerResponse(200, description: "Deletion has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
         [SwaggerResponse(403, description: "Not enough permission. At least Admin")]
-        [Authorize(Roles = "Admin")]
         public abstract Task<IActionResult> DeleteAnArticle([FromRoute]string articleId);
 
         [HttpPatch("{articleId}")]
         [SwaggerOperation]
+        [ArticleExists]
         [Authorize(Roles = Role.Admin)]
         [SwaggerResponse(200, description: "Patch/Update has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
-        [Authorize(Roles = "Admin")]
         public abstract Task<IActionResult> PatchAnArticle([FromRoute]string articleId, [FromBody]ArticleMinimal article);
 
         [HttpPost]
@@ -68,7 +67,6 @@ namespace VicBlogServer.Controllers
         [SwaggerResponse(200, description: "Creation has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
         [SwaggerResponse(403, description: "Not enough permission. At least Admin")]
-        [Authorize(Roles = "Admin")]
         public abstract Task<IActionResult> CreateAnArticle([FromBody]ArticleMinimal article);
     }
 
@@ -78,8 +76,8 @@ namespace VicBlogServer.Controllers
         private readonly ILikeDataService likeService;
         private readonly ITagDataService tagService;
         private readonly ICommentDataService commentService;
-        public ArticleController(IArticleDataService articleService, 
-            ILikeDataService likeService, ITagDataService tagService, ICommentDataService commentService)
+
+        public ArticleController(IArticleDataService articleService, ILikeDataService likeService, ITagDataService tagService, ICommentDataService commentService)
         {
             this.articleService = articleService;
             this.likeService = likeService;
@@ -96,18 +94,19 @@ namespace VicBlogServer.Controllers
                 Content = article.Content,
                 CreateTime = DateTime.Now,
                 LastEditedTime = DateTime.Now,
-                Title = article.Title
+                Title = article.Title,
+                Username = HttpContext.User.Identity.Name
             };
 
-            await articleService.Add(newArticle);
+            articleService.Add(newArticle);
 
-            await tagService.AddRange(article.Tags.Select(x => new ArticleTagModel()
+            tagService.AddRange(article.Tags.Select(x => new ArticleTagModel()
             {
                 ArticleId = articleId,
                 Tag = x
             }));
 
-            await articleService.SaveChanges();
+            await articleService.SaveChangesAsync();
 
             return Created($"api/Article/{articleId}", "");
             
@@ -115,28 +114,24 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> DeleteAnArticle([FromRoute] string articleId)
         {
-            await articleService.Remove(articleId);
-            var ids = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
-            await tagService.RemoveRange(ids);
+            await articleService.RemoveAsync(articleId);
 
-            await articleService.SaveChanges();
+            var ids = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
+            await tagService.RemoveRangeAsync(ids);
+
+            await articleService.SaveChangesAsync();
 
             return Json(articleId);
         }
 
         public override async Task<IActionResult> GetAnArticle([FromRoute] string articleId)
         {
-            ArticleModel articleModel = await articleService.FindById(articleId);
-            if (articleModel == null)
-            {
-                return NotFound();
-            }
-
+            ArticleModel articleModel = await articleService.FindByIdAsync(articleId);
             var tags = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Tag);
             var likes = likeService.Raw.Where(x => x.ArticleId == articleId)
                 .Select(x => new ArticleLikeViewModel()
                 {
-                    Time = x.LikeTime,
+                    LikeTime = x.LikeTime,
                     Username = x.Username
                 });
 
@@ -157,11 +152,12 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> Filter([FromQuery]ArticleFiler filter)
         {
-            if (filter == null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
+            
             var articles = from article in articleService.Raw
                            where (filter.TitleText != null) ||
                                 (article.Title.Contains(filter.TitleText))
@@ -222,30 +218,23 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> PatchAnArticle([FromRoute] string articleId, [FromBody] ArticleMinimal article)
         {
-            var existentArticle = await articleService.FindById(articleId);
-            if (existentArticle == null)
-            {
-                return NotFound();
-            }
+            var existentArticle = await articleService.FindByIdAsync(articleId);
 
             existentArticle.Content = article.Content;
             existentArticle.Title = article.Title;
             existentArticle.LastEditedTime = DateTime.Now;
-            await articleService.Update(existentArticle);
+            articleService.Update(existentArticle);
 
-            var existentTags = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
-            await tagService.RemoveRange(existentTags);
+            var existentTagIds = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
+            await tagService.RemoveRangeAsync(existentTagIds);
 
-            foreach (var tag in article.Tags)
+            tagService.AddRange(article.Tags.Select(tag => new ArticleTagModel()
             {
-                await tagService.Add(new ArticleTagModel()
-                {
-                    ArticleId = articleId,
-                    Tag = tag
-                });
-            }
+                ArticleId = articleId,
+                Tag = tag
+            }));
 
-            await articleService.SaveChanges();
+            await articleService.SaveChangesAsync();
 
             return Created($"api/Article/{articleId}", "");
 

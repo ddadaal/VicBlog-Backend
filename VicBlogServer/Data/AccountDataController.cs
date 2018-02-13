@@ -13,7 +13,7 @@ using VicBlogServer.Models;
 
 namespace VicBlogServer.Data
 {
-    public class AccountData : IAccountDataService
+    public class AccountDataController : IAccountDataService
     {
         private readonly SignInManager<UserModel> signInManager;
         private readonly UserManager<UserModel> userManager;
@@ -24,7 +24,7 @@ namespace VicBlogServer.Data
 
         public IQueryable<Role> Roles => roleManager.Roles;
 
-        public AccountData(UserManager<UserModel> userManager, SignInManager<UserModel> signInManager, 
+        public AccountDataController(UserManager<UserModel> userManager, SignInManager<UserModel> signInManager, 
             IConfiguration configuration, RoleManager<Role> roleManager)
         {
             this.userManager = userManager;
@@ -51,7 +51,7 @@ namespace VicBlogServer.Data
         }
 
 
-        public async Task<UserModel> GetUser(string username)
+        public UserModel GetUser(string username)
         {
             return userManager.Users.FirstOrDefault(x => x.UserName == username);
         }
@@ -91,7 +91,7 @@ namespace VicBlogServer.Data
 
         public async Task<string> GetRole(string username)
         {
-            var roles = await userManager.GetRolesAsync(await GetUser(username));
+            var roles = await userManager.GetRolesAsync(GetUser(username));
             return roles.FirstOrDefault();
         }
     }

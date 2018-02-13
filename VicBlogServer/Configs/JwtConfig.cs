@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace VicBlogServer.Configs
             {
                 Issuer = configuration["Jwt:Issuer"],
                 Key = configuration["Jwt:Key"],
-                ExpireDays = int.Parse(configuration["Jwt:ExpireDays"])
+                ExpireDays = int.Parse(configuration["Jwt:ExpireDays"], CultureInfo.CurrentCulture)
             };
         }
     }
