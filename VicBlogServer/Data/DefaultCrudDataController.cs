@@ -9,13 +9,12 @@ using VicBlogServer.Models;
 namespace VicBlogServer.Data
 {
     public class DefaultCrudDataController<D, K>  : ICrudDataService<D, K>
-        where D: class
+        where D: class, ISingleKey<K> where K: IEquatable<K>
     {
         private readonly BlogContext context;
         private readonly DbSet<D> dbSet;
 
-        public DefaultCrudDataController
-            (BlogContext context, DbSet<D> dbSet)
+        public DefaultCrudDataController(BlogContext context, DbSet<D> dbSet)
         {
             this.context = context;
             this.dbSet = dbSet;
@@ -43,12 +42,10 @@ namespace VicBlogServer.Data
             dbSet.Remove(await FindByIdAsync(id));
         }
 
-        public async Task RemoveRangeAsync(IEnumerable<K> ids)
+        public void RemoveRange(IEnumerable<K> ids)
         {
-            foreach (K id in ids)
-            {
-                await RemoveAsync(id);
-            }
+            var entities = dbSet.Where(x => ids.Contains(x.Id));
+            dbSet.RemoveRange(entities);
         }
 
         public async Task SaveChangesAsync()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VicBlogServer.Models;
 
 namespace VicBlogServer.DataService
 {
@@ -10,7 +11,7 @@ namespace VicBlogServer.DataService
     /// </summary>
     /// <typeparam name="D">Data type</typeparam>
     /// <typeparam name="K">Key type</typeparam>
-    public interface ICrudDataService<D, K> where D: class
+    public interface ICrudDataService<D, K> where D: class, ISingleKey<K> where K: IEquatable<K>
     {
         /// <summary>
         /// Gets the raw IQueryable for advanced query.
@@ -51,7 +52,7 @@ namespace VicBlogServer.DataService
         /// </summary>
         /// <param name="ids">all the ids</param>
         /// <returns></returns>
-        Task RemoveRangeAsync(IEnumerable<K> ids);
+        void RemoveRange(IEnumerable<K> ids);
 
         /// <summary>
         /// Updates an entity.

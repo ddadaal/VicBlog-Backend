@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VicBlogServer.Models
 {
-    public class ArticleTagModel
+    public class ArticleTagModel : ISingleKey<int>
     {
         [Key]
         public int Id { get; set; }

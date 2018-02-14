@@ -118,7 +118,7 @@ namespace VicBlogServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, BlogContext context, UserManager<UserModel> userManager)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, BlogContext context, UserManager<UserModel> userManager, RoleManager<Role> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -132,6 +132,9 @@ namespace VicBlogServer
             app.UseMvc();
 
             context.Database.EnsureCreated();
+
+            roleManager.CreateAsync(new Role(Role.Admin));
+            roleManager.CreateAsync(new Role(Role.User));
         }
     }
 }

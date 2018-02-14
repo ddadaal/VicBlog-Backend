@@ -7,9 +7,9 @@ namespace VicBlogServer.Utils
 {
     public static class Utils
     {
-        public static long ToUnixUTCTime(this DateTime datetime)
+        public static long ToUnixUTCTime(this DateTime utcDateTime)
         {
-            return (long)((datetime.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMilliseconds);
+            return (long)((utcDateTime - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMilliseconds);
         }
 
         public static bool IsBetween(this long time,  long min, long max)

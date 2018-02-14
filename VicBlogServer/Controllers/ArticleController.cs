@@ -88,12 +88,13 @@ namespace VicBlogServer.Controllers
         public override async Task<IActionResult> CreateAnArticle([FromBody] ArticleMinimal article)
         {
             string articleId = Guid.NewGuid().ToString();
+            var now = DateTime.UtcNow;
             ArticleModel newArticle = new ArticleModel()
             {
                 Id = articleId,
                 Content = article.Content,
-                CreateTime = DateTime.Now,
-                LastEditedTime = DateTime.Now,
+                CreateTime = now,
+                LastEditedTime = now,
                 Title = article.Title,
                 Username = HttpContext.User.Identity.Name
             };
@@ -117,7 +118,7 @@ namespace VicBlogServer.Controllers
             await articleService.RemoveAsync(articleId);
 
             var ids = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
-            await tagService.RemoveRangeAsync(ids);
+            tagService.RemoveRange(ids);
 
             await articleService.SaveChangesAsync();
 
@@ -222,11 +223,11 @@ namespace VicBlogServer.Controllers
 
             existentArticle.Content = article.Content;
             existentArticle.Title = article.Title;
-            existentArticle.LastEditedTime = DateTime.Now;
+            existentArticle.LastEditedTime = DateTime.UtcNow;
             articleService.Update(existentArticle);
 
             var existentTagIds = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
-            await tagService.RemoveRangeAsync(existentTagIds);
+            tagService.RemoveRange(existentTagIds);
 
             tagService.AddRange(article.Tags.Select(tag => new ArticleTagModel()
             {

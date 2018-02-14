@@ -31,29 +31,11 @@ namespace VicBlogServer.Data
             this.signInManager = signInManager;
             this.configuration = configuration;
             this.roleManager = roleManager;
-
-            InitializeRole().Wait();
         }
-
-        private async Task InitializeRole()
-        {
-            await CreateRoleIfNotExist(Role.Admin);
-            await CreateRoleIfNotExist(Role.User);
-        }
-
-        private async Task CreateRoleIfNotExist(string roleName)
-        {
-            if (!(await roleManager.RoleExistsAsync(roleName)))
-            {
-                var role = new Role(roleName);
-                await roleManager.CreateAsync(role);
-            }
-        }
-
 
         public UserModel GetUser(string username)
         {
-            return userManager.Users.FirstOrDefault(x => x.UserName == username);
+            return userManager.Users.SingleOrDefault(x => x.UserName == username);
         }
 
         public async Task<bool> Login(string username, string password)
@@ -67,12 +49,14 @@ namespace VicBlogServer.Data
             var user = new UserModel
             {
                 UserName = username,
+                RegisterTime = DateTime.UtcNow
             };
+
             var result = await userManager.CreateAsync(user, password);
 
             if (result.Succeeded)
             {
-                var registeredUser = userManager.Users.FirstOrDefault(x => x.UserName == username);
+                var registeredUser = userManager.Users.SingleOrDefault(x => x.UserName == username);
                 await userManager.AddToRoleAsync(registeredUser, Role.User);
                 return new RegisterResult()
                 {
@@ -92,7 +76,7 @@ namespace VicBlogServer.Data
         public async Task<string> GetRole(string username)
         {
             var roles = await userManager.GetRolesAsync(GetUser(username));
-            return roles.FirstOrDefault();
+            return roles.SingleOrDefault();
         }
     }
 }

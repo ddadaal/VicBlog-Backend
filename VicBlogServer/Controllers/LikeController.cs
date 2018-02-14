@@ -113,7 +113,7 @@ namespace VicBlogServer.Controllers
         {
             var username = HttpContext.User.Identity.Name;
 
-            var like = likeService.Raw.Where(x => x.ArticleId == articleId && x.Username == username).FirstOrDefault();
+            var like = likeService.Raw.Where(x => x.ArticleId == articleId && x.Username == username).SingleOrDefault();
             if (like == null)
             {
                 return BadRequest();

@@ -34,6 +34,8 @@ namespace VicBlogServer.Models
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public DateTime RegisterTime { get; set; }
     }
 
     public class Role: IdentityRole

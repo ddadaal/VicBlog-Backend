@@ -8,7 +8,7 @@ using VicBlogServer.Utils;
 
 namespace VicBlogServer.Models
 {
-    public class ArticleModel
+    public class ArticleModel : ISingleKey<string>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]

@@ -82,7 +82,7 @@ namespace VicBlogServer.Controllers
             {
                 ArticleId = articleId,
                 Content = comment.Content,
-                SubmitTime = DateTime.Now,
+                SubmitTime = DateTime.UtcNow,
                 Username = HttpContext.User.Identity.Name
             };
 

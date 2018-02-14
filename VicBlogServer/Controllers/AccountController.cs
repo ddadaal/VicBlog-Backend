@@ -26,14 +26,14 @@ namespace VicBlogServer.Controllers
         [HttpGet("Login")]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(UserLoginDto), description: "Login successful. Returns token, username, registerTime and role.")]
-        [SwaggerResponse(400, description: "Credential provided is not valid.")]
+        [SwaggerResponse(400, type: typeof(StandardErrorDto), description: "Credential provided is not valid.")]
         public abstract Task<IActionResult> Login([FromQuery]UserLoginDto model);
 
         [HttpPost("Register")]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(UserLoginDto), description: "Login successful. Returns token, username, registerTime and role.")]
-        [SwaggerResponse(409, description: "Username already exists.")]
-        [SwaggerResponse(400, description: "Problems occurred.")]
+        [SwaggerResponse(409, type: typeof(StandardErrorDto), description: "Username already exists.")]
+        [SwaggerResponse(400, type: typeof(MultipleErrorsDto), description: "Other errors occurred.")]
         public abstract Task<IActionResult> Register([FromQuery]UserRegisterDto model);
 
         [HttpPost("Test")]
@@ -89,7 +89,11 @@ namespace VicBlogServer.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest(new StandardErrorDto()
+                {
+                    Code = "CredentialInvalid",
+                    Description = "Credentials provided are invalid."
+                });
             }
 
         }
@@ -116,7 +120,11 @@ namespace VicBlogServer.Controllers
                 }
                 else
                 {
-                    return BadRequest(result.Errors);
+                    return BadRequest(new MultipleErrorsDto()
+                    {
+                        Code = "RegisterFailed",
+                        ErrorDescriptions = result.Errors.Select(x => x.Description)
+                    });
                 }
 
             }
@@ -135,7 +143,8 @@ namespace VicBlogServer.Controllers
             var userVM = new UserViewModel()
             {
                 Role = role,
-                Username = username
+                Username = username,
+                RegisterTime = user.RegisterTime
             };
 
             return Json(userVM);

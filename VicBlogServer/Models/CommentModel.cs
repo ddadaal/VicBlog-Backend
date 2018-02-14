@@ -8,7 +8,7 @@ using VicBlogServer.Utils;
 
 namespace VicBlogServer.Models
 {
-    public partial class CommentModel
+    public partial class CommentModel : ISingleKey<int>
     {
         [Key]
         public int Id { get; set; }
