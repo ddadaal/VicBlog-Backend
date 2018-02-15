@@ -8,11 +8,10 @@ using VicBlogServer.Utils;
 
 namespace VicBlogServer.Models
 {
-    public class ArticleModel : ISingleKey<string>
+    public class ArticleModel : ISingleKey<int>
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         public string Username { get; set; }
 

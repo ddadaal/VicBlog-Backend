@@ -15,8 +15,8 @@ using VicBlogServer.ViewModels.Dto;
 namespace VicBlogServer.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Comment")]
-    public abstract class CommentControllerSpec : Controller
+    [Route("api/Comments")]
+    public abstract class CommentsControllerSpec : Controller
     {
         [HttpPost]
         [Authorize]
@@ -25,7 +25,7 @@ namespace VicBlogServer.Controllers
         [SwaggerResponse(201, description: "Comment has been created.")]
         [SwaggerResponse(401, description: "Not logged in.")]
         [SwaggerResponse(404, typeof(StandardErrorDto), description: "Article id is not valid.")]
-        public abstract Task<IActionResult> AddComment([FromQuery]string articleId, [FromBody]CommentMinimal comment);
+        public abstract Task<IActionResult> AddComment([FromQuery]int articleId, [FromBody]CommentMinimal comment);
 
         [HttpDelete]
         [Authorize]
@@ -41,7 +41,7 @@ namespace VicBlogServer.Controllers
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(List<CommentViewModel>), description: "Returns the comments of the article.")]
         [SwaggerResponse(404, typeof(StandardErrorDto), description: "The article is not found.")]
-        public abstract Task<IActionResult> GetComments([FromQuery]string articleId);
+        public abstract Task<IActionResult> GetComments([FromQuery]int articleId);
 
         [HttpGet("{commentId}")]
         [SwaggerOperation]
@@ -50,7 +50,7 @@ namespace VicBlogServer.Controllers
         public abstract Task<IActionResult> GetComment([FromRoute]int id);
     }
 
-    public class CommentController : CommentControllerSpec
+    public class CommentsController : CommentsControllerSpec
     {
 
         private readonly IArticleDataService articleService;
@@ -69,14 +69,14 @@ namespace VicBlogServer.Controllers
             };
         }
 
-        public CommentController(IArticleDataService articleService, ICommentDataService commentService, IAccountDataService userService)
+        public CommentsController(IArticleDataService articleService, ICommentDataService commentService, IAccountDataService userService)
         {
             this.articleService = articleService;
             this.commentService = commentService;
             this.userService = userService;
         }
 
-        public override async Task<IActionResult> AddComment([FromQuery]string articleId, [FromBody] CommentMinimal comment)
+        public override async Task<IActionResult> AddComment([FromQuery]int articleId, [FromBody] CommentMinimal comment)
         {
             var newComment = new CommentModel()
             {
@@ -89,7 +89,7 @@ namespace VicBlogServer.Controllers
             commentService.Add(newComment);
             await commentService.SaveChangesAsync();
 
-            return Created($"api/Comment/{newComment.Id}", "");
+            return Created($"api/Comments/{newComment.Id}", "");
         }
 
         public override async Task<IActionResult> GetComment([FromRoute] int id)
@@ -106,7 +106,7 @@ namespace VicBlogServer.Controllers
 
         }
 
-        public override async Task<IActionResult> GetComments([FromQuery] string articleId)
+        public override async Task<IActionResult> GetComments([FromQuery] int articleId)
         {
             var comments = from x in commentService.Raw
                            where x.ArticleId == articleId
@@ -123,7 +123,7 @@ namespace VicBlogServer.Controllers
             }
 
             var username = HttpContext.User.Identity.Name;
-            if (username != comment.Username && await userService.GetRole(username) != Role.Admin)
+            if (username != comment.Username && await userService.GetRoleAsync(username) != Role.Admin)
             {
                 return Forbid();
             }

@@ -37,7 +37,7 @@ namespace VicBlogServer.DataService
         /// <param name="username">Username</param>
         /// <param name="password">Password</param>
         /// <returns>Whether login is successful</returns>
-        Task<bool> Login(string username, string password);
+        Task<bool> LoginAsync(string username, string password);
 
         /// <summary>
         /// Attempts to register with provided username and password.
@@ -46,7 +46,7 @@ namespace VicBlogServer.DataService
         /// <param name="password"></param>
         /// <param name="roleName"></param>
         /// <returns></returns>
-        Task<RegisterResult> Register(string username, string password, string roleName = Role.User);
+        Task<RegisterResult> RegisterAsync(string username, string password, string roleName = Role.User);
 
         /// <summary>
         /// Gets a User with username
@@ -60,6 +60,6 @@ namespace VicBlogServer.DataService
         /// </summary>
         /// <param name="username">Username</param>
         /// <returns>The Role of null if username doesn't exist</returns>
-        Task<string> GetRole(string username);
+        Task<string> GetRoleAsync(string username);
     }
 }

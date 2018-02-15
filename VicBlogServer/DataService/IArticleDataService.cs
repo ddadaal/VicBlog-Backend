@@ -7,7 +7,7 @@ using VicBlogServer.ViewModels;
 
 namespace VicBlogServer.DataService
 {
-    public interface IArticleDataService : ICrudDataService<ArticleModel, string>
+    public interface IArticleDataService : ICrudDataService<ArticleModel, int>
     {
     }
 }

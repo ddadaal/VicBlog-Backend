@@ -12,7 +12,7 @@ namespace VicBlogServer.Test
     public class ArticleControllerTest
     {
 
-        private ArticleController controller;
+        private ArticlesController controller;
 
         public ArticleControllerTest()
         {

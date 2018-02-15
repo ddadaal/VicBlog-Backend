@@ -26,7 +26,7 @@ namespace VicBlogServer.Controllers
         [HttpGet("Login")]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(UserLoginDto), description: "Login successful. Returns token, username, registerTime and role.")]
-        [SwaggerResponse(400, type: typeof(StandardErrorDto), description: "Credential provided is not valid.")]
+        [SwaggerResponse(401, type: typeof(StandardErrorDto), description: "Credential provided is not valid.")]
         public abstract Task<IActionResult> Login([FromQuery]UserLoginDto model);
 
         [HttpPost("Register")]
@@ -76,10 +76,10 @@ namespace VicBlogServer.Controllers
         public override async Task<IActionResult> Login([FromQuery]UserLoginDto model)
         {
             string username = model.Username;
-            var result = await accountService.Login(username, model.Password);
+            var result = await accountService.LoginAsync(username, model.Password);
             if (result)
             {
-                var role = await accountService.GetRole(username);
+                var role = await accountService.GetRoleAsync(username);
                 return Json(new UserLoginResponseDto()
                 {
                     Token = Models.UserModel.GenerateToken(username, role),
@@ -89,7 +89,7 @@ namespace VicBlogServer.Controllers
             }
             else
             {
-                return BadRequest(new StandardErrorDto()
+                return StatusCode(401, new StandardErrorDto()
                 {
                     Code = "CredentialInvalid",
                     Description = "Credentials provided are invalid."
@@ -101,11 +101,11 @@ namespace VicBlogServer.Controllers
         public override async Task<IActionResult> Register([FromQuery]UserRegisterDto model)
         {
             var username = model.Username;
-            var result = await accountService.Register(username, model.Password);
+            var result = await accountService.RegisterAsync(username, model.Password);
             
             if (result.Succeeded)
             {
-                var role = await accountService.GetRole(username);
+                var role = await accountService.GetRoleAsync(username);
                 return Json(new UserLoginResponseDto()
                 {
                     Token = Models.UserModel.GenerateToken(username, role),
@@ -133,7 +133,7 @@ namespace VicBlogServer.Controllers
         public override async Task<IActionResult> GetAUser([FromRoute] string username)
         {
             var user = accountService.GetUser(username);
-            var role = await accountService.GetRole(username);
+            var role = await accountService.GetRoleAsync(username);
 
             if (user == null)
             {

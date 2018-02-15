@@ -10,7 +10,7 @@ namespace VicBlogServer.ViewModels
     {
         public int Id { get; set; }
 
-        public string ArticleId { get; set; }
+        public int ArticleId { get; set; }
 
         public string Username { get; set; }
 

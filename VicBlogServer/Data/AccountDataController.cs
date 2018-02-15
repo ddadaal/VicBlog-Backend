@@ -38,13 +38,13 @@ namespace VicBlogServer.Data
             return userManager.Users.SingleOrDefault(x => x.UserName == username);
         }
 
-        public async Task<bool> Login(string username, string password)
+        public async Task<bool> LoginAsync(string username, string password)
         {
             var result = await signInManager.PasswordSignInAsync(username, password, false, false);
             return result.Succeeded;
         }
 
-        public async Task<RegisterResult> Register(string username, string password, string roleName = Role.User)
+        public async Task<RegisterResult> RegisterAsync(string username, string password, string roleName = Role.User)
         {
             var user = new UserModel
             {
@@ -73,7 +73,7 @@ namespace VicBlogServer.Data
             }
         }
 
-        public async Task<string> GetRole(string username)
+        public async Task<string> GetRoleAsync(string username)
         {
             var roles = await userManager.GetRolesAsync(GetUser(username));
             return roles.SingleOrDefault();

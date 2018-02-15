@@ -14,40 +14,30 @@ namespace VicBlogServer.Filters
     {
         const string key = "articleId";
 
-        IActionResult ArgumentInvalid => new BadRequestObjectResult(new StandardErrorDto()
-        {
-            Code = "ArgumentInvalid",
-            Description = "Article id is not a string or is not attached on querystring."
-        });
-
-        IActionResult ArticleNotExist => new NotFoundObjectResult(new StandardErrorDto()
-        {
-            Code = "ArticleNotExist",
-            Description = "Article specified doesn't exist."
-        });
-
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var articleService = context.RequireService<IArticleDataService>();
 
-            var articleId = context.ModelState[key].RawValue as string;
+            var raw = context.ModelState[key].RawValue;
 
-            if (articleId == null)
+            if (!int.TryParse(raw.ToString(), out int s))
             {
-                context.Result = ArgumentInvalid;
-            }
-            else if (await articleService.FindByIdAsync(articleId) == null)
+                context.Result = new BadRequestObjectResult(new StandardErrorDto()
+                {
+                    Code = "ArgumentInvalid",
+                    Description = "Article id is not a int."
+                });
+            } else if (await articleService.FindByIdAsync(s) == null)
             {
-                context.Result = ArticleNotExist;
-            }
-            else
+                context.Result = new NotFoundObjectResult(new StandardErrorDto()
+                {
+                    Code = "ArticleNotExist",
+                    Description = "Article specified doesn't exist."
+                });
+            } else
             {
                 await next();
             }
-
-
-
-
         }
     }
 }

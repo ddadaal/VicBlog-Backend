@@ -10,9 +10,7 @@ using VicBlogServer.ViewModels;
 
 namespace VicBlogServer.Data
 {
-    public class ArticleDataController : 
-        DefaultCrudDataController<ArticleModel, string>,
-        IArticleDataService
+    public class ArticleDataController : DefaultCrudDataController<ArticleModel, int>, IArticleDataService
     {
         public ArticleDataController(BlogContext context): base(context, context.Articles)
         {

@@ -15,22 +15,22 @@ using VicBlogServer.ViewModels.Dto;
 namespace VicBlogServer.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Like")]
-    public abstract class LikeControllerSpec : Controller
+    [Route("api/Likes")]
+    public abstract class LikesControllerSpec : Controller
     {
         [HttpGet]
         [ArticleExists]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(int), description: "Returns like count of the articleId.")]
         [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "article id doesn't exist.")]
-        public abstract Task<IActionResult> GetLikeCount([FromQuery]string articleId);
+        public abstract Task<IActionResult> GetLikeCount([FromQuery]int articleId);
 
         [HttpGet("History")]
         [ArticleExists]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(List<ArticleLikeViewModel>), description: "Returns like history of the articleId.")]
         [SwaggerResponse(404, description: "article id doesn't exist.")]
-        public abstract Task<IActionResult> GetLikeHistory([FromQuery]string articleId);
+        public abstract Task<IActionResult> GetLikeHistory([FromQuery]int articleId);
 
         [HttpPost]
         [Authorize]
@@ -40,7 +40,7 @@ namespace VicBlogServer.Controllers
         [SwaggerResponse(401, description: "Not logged in.")]
         [SwaggerResponse(404, description: "Article id doesn't exist.")]
         [SwaggerResponse(409, description: "The user has already liked the article.")]
-        public abstract Task<IActionResult> CreateALike([FromQuery]string articleId);
+        public abstract Task<IActionResult> CreateALike([FromQuery]int articleId);
 
         [HttpDelete]
         [Authorize]
@@ -50,21 +50,21 @@ namespace VicBlogServer.Controllers
         [SwaggerResponse(404, description: "Article id doesn't exist.")]
         [SwaggerResponse(400, description: "The user hasn't liked the article.")]
         [SwaggerResponse(401, description: "Not logged in.")]
-        public abstract Task<IActionResult> RemoveALike([FromQuery]string articleId);
+        public abstract Task<IActionResult> RemoveALike([FromQuery]int articleId);
     }
 
-    public class LikeController : LikeControllerSpec
+    public class LikesController : LikesControllerSpec
     {
         private readonly ILikeDataService likeService;
         private readonly IArticleDataService articleDataService;
 
-        public LikeController(ILikeDataService likeService, IArticleDataService articleDataService)
+        public LikesController(ILikeDataService likeService, IArticleDataService articleDataService)
         {
             this.likeService = likeService;
             this.articleDataService = articleDataService;
         }
 
-        public override async Task<IActionResult> CreateALike([FromQuery] string articleId)
+        public override async Task<IActionResult> CreateALike([FromQuery] int articleId)
         {
             var username = HttpContext.User.Identity.Name;
 
@@ -75,7 +75,7 @@ namespace VicBlogServer.Controllers
 
             var like = new ArticleLikeModel()
             {
-                LikeTime = DateTime.Now,
+                LikeTime = DateTime.UtcNow,
                 Username = username,
                 ArticleId = articleId
             };
@@ -87,12 +87,12 @@ namespace VicBlogServer.Controllers
 
         }
 
-        public override async Task<IActionResult> GetLikeCount([FromQuery] string articleId)
+        public override async Task<IActionResult> GetLikeCount([FromQuery] int articleId)
         {
             return Json(Count(articleId));
         }
 
-        public override async Task<IActionResult> GetLikeHistory([FromQuery] string articleId)
+        public override async Task<IActionResult> GetLikeHistory([FromQuery] int articleId)
         {
 
             var history = likeService.Raw.Select(x => new ArticleLikeViewModel()
@@ -104,12 +104,12 @@ namespace VicBlogServer.Controllers
             return Json(history);
         }
 
-        private int Count(string articleId)
+        private int Count(int articleId)
         {
             return likeService.Raw.Where(x => x.ArticleId == articleId).Count();
         }
 
-        public override async Task<IActionResult> RemoveALike([FromQuery] string articleId)
+        public override async Task<IActionResult> RemoveALike([FromQuery] int articleId)
         {
             var username = HttpContext.User.Identity.Name;
 

@@ -17,8 +17,8 @@ using VicBlogServer.ViewModels.Dto;
 namespace VicBlogServer.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Article")]
-    public abstract class ArticleControllerSpec : Controller
+    [Route("api/Articles")]
+    public abstract class ArticlesControllerSpec : Controller
     {
         [HttpGet]
         [SwaggerOperation]
@@ -41,7 +41,7 @@ namespace VicBlogServer.Controllers
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(ArticleModel),description: "Gets an Article from articleId.")]
         [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "Article id doesn't exist.")]
-        public abstract Task<IActionResult> GetAnArticle([FromRoute]string articleId);
+        public abstract Task<IActionResult> GetAnArticle([FromRoute]int articleId);
 
 
         [HttpDelete("{articleId}")]
@@ -51,7 +51,7 @@ namespace VicBlogServer.Controllers
         [SwaggerResponse(200, description: "Deletion has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
         [SwaggerResponse(403, description: "Not enough permission. At least Admin")]
-        public abstract Task<IActionResult> DeleteAnArticle([FromRoute]string articleId);
+        public abstract Task<IActionResult> DeleteAnArticle([FromRoute]int articleId);
 
         [HttpPatch("{articleId}")]
         [SwaggerOperation]
@@ -59,7 +59,7 @@ namespace VicBlogServer.Controllers
         [Authorize(Roles = Role.Admin)]
         [SwaggerResponse(200, description: "Patch/Update has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
-        public abstract Task<IActionResult> PatchAnArticle([FromRoute]string articleId, [FromBody]ArticleMinimal article);
+        public abstract Task<IActionResult> PatchAnArticle([FromRoute]int articleId, [FromBody]ArticleMinimal article);
 
         [HttpPost]
         [SwaggerOperation]
@@ -70,14 +70,14 @@ namespace VicBlogServer.Controllers
         public abstract Task<IActionResult> CreateAnArticle([FromBody]ArticleMinimal article);
     }
 
-    public class ArticleController : ArticleControllerSpec
+    public class ArticlesController : ArticlesControllerSpec
     {
         private readonly IArticleDataService articleService;
         private readonly ILikeDataService likeService;
         private readonly ITagDataService tagService;
         private readonly ICommentDataService commentService;
 
-        public ArticleController(IArticleDataService articleService, ILikeDataService likeService, ITagDataService tagService, ICommentDataService commentService)
+        public ArticlesController(IArticleDataService articleService, ILikeDataService likeService, ITagDataService tagService, ICommentDataService commentService)
         {
             this.articleService = articleService;
             this.likeService = likeService;
@@ -87,11 +87,9 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> CreateAnArticle([FromBody] ArticleMinimal article)
         {
-            string articleId = Guid.NewGuid().ToString();
             var now = DateTime.UtcNow;
             ArticleModel newArticle = new ArticleModel()
             {
-                Id = articleId,
                 Content = article.Content,
                 CreateTime = now,
                 LastEditedTime = now,
@@ -101,19 +99,23 @@ namespace VicBlogServer.Controllers
 
             articleService.Add(newArticle);
 
+            await articleService.SaveChangesAsync();
+
+            var id = newArticle.Id;
+
             tagService.AddRange(article.Tags.Select(x => new ArticleTagModel()
             {
-                ArticleId = articleId,
+                ArticleId = id,
                 Tag = x
             }));
 
             await articleService.SaveChangesAsync();
 
-            return Created($"api/Article/{articleId}", "");
+            return Created($"api/Articles/{id}", "");
             
         }
 
-        public override async Task<IActionResult> DeleteAnArticle([FromRoute] string articleId)
+        public override async Task<IActionResult> DeleteAnArticle([FromRoute] int articleId)
         {
             await articleService.RemoveAsync(articleId);
 
@@ -125,7 +127,7 @@ namespace VicBlogServer.Controllers
             return Json(articleId);
         }
 
-        public override async Task<IActionResult> GetAnArticle([FromRoute] string articleId)
+        public override async Task<IActionResult> GetAnArticle([FromRoute] int articleId)
         {
             ArticleModel articleModel = await articleService.FindByIdAsync(articleId);
             var tags = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Tag);
@@ -217,7 +219,7 @@ namespace VicBlogServer.Controllers
             return Json(tagService.Raw.Select(x => x.Tag).Distinct());
         }
 
-        public override async Task<IActionResult> PatchAnArticle([FromRoute] string articleId, [FromBody] ArticleMinimal article)
+        public override async Task<IActionResult> PatchAnArticle([FromRoute] int articleId, [FromBody] ArticleMinimal article)
         {
             var existentArticle = await articleService.FindByIdAsync(articleId);
 

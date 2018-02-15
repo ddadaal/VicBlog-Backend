@@ -133,8 +133,8 @@ namespace VicBlogServer
 
             context.Database.EnsureCreated();
 
-            roleManager.CreateAsync(new Role(Role.Admin));
-            roleManager.CreateAsync(new Role(Role.User));
+            roleManager.CreateAsync(new Role(Role.Admin)).Wait();
+            roleManager.CreateAsync(new Role(Role.User)).Wait();
         }
     }
 }
