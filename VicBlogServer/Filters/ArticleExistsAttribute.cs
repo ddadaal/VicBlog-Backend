@@ -12,22 +12,22 @@ namespace VicBlogServer.Filters
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class ArticleExistsAttribute : ActionFilterAttribute
     {
-        const string key = "articleId";
+        private const string Key = "articleId";
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var articleService = context.RequireService<IArticleDataService>();
 
-            var raw = context.ModelState[key].RawValue;
+            var raw = context.ModelState[Key].RawValue;
 
-            if (!int.TryParse(raw.ToString(), out int s))
+            if (!int.TryParse(raw.ToString(), out var id))
             {
                 context.Result = new BadRequestObjectResult(new StandardErrorDto()
                 {
                     Code = "ArgumentInvalid",
                     Description = "Article id is not a int."
                 });
-            } else if (await articleService.FindByIdAsync(s) == null)
+            } else if (!(await articleService.IdExistsAsync(id)))
             {
                 context.Result = new NotFoundObjectResult(new StandardErrorDto()
                 {

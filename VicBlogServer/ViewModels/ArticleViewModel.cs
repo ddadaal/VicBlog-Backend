@@ -20,14 +20,20 @@ namespace VicBlogServer.ViewModels
 
         public string Content { get; set; }
 
-        public IEnumerable<ArticleLikeViewModel> Likes { get; set; }
-
         public IEnumerable<string> Tags { get; set; }
+    }
+
+    public class ArticleListViewModel
+    {
+   
+        public PagingInfo PagingInfo { get; set; }
+
+        public IEnumerable<ArticleBriefViewModel> List { get; set; }
     }
 
     public class ArticleBriefViewModel
     {
-        public int Id { get; set; }
+        public int ArticleId { get; set; }
 
         public string Username { get; set; }
 

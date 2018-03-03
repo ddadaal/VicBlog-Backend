@@ -9,5 +9,8 @@ namespace VicBlogServer.DataService
 {
     public interface IArticleDataService : ICrudDataService<ArticleModel, int>
     {
+        Task<ArticleModel> FindAFullyLoadArticleAsync(int articleId);
+        
+        IQueryable<ArticleModel> FullyLoadedRaw { get; }
     }
 }

@@ -11,5 +11,6 @@ namespace VicBlogServer.Models
         public DbSet<CommentModel> Comments { get; set; }
 
         public BlogContext(DbContextOptions<BlogContext> options): base(options) { }
+
     }
 }

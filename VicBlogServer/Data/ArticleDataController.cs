@@ -14,7 +14,32 @@ namespace VicBlogServer.Data
     {
         public ArticleDataController(BlogContext context): base(context, context.Articles)
         {
+            
+            
         }
 
+        public async Task<ArticleModel> FindAFullyLoadArticleAsync(int id)
+        {
+            var article = await dbSet.FindAsync(id);
+
+            if (article == null)
+            {
+                return null;
+            }
+            context.Entry(article).Collection(x => x.Tags).Load(); 
+            context.Entry(article).Collection(x => x.Likes).Load();
+            context.Entry(article).Collection(x => x.Comments).Load();
+
+            return article;
+        }
+
+        public IQueryable<ArticleModel> FullyLoadedRaw
+        {
+            get { return dbSet.Include(x => x.Comments).Include(x => x.Likes).Include(x => x.Tags); }
+        }
+        
+        
+        
+        
     }
 }

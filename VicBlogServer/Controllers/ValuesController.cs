@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace VicBlogServer.Controllers
 {
+
     [Route("/")]
     public class ValuesController : Controller
     {
@@ -15,7 +16,11 @@ namespace VicBlogServer.Controllers
             return Redirect("/swagger");
         }
 
-
+        //[HttpPost("Test")]
+        //public async Task<IActionResult> Test()
+        //{
+        //    return Json(Request.Form.Select(x => new {  x.Key, x.Value }));
+        //}
     }
 
 }

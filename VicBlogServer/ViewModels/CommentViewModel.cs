@@ -16,14 +16,19 @@ namespace VicBlogServer.ViewModels
 
         public DateTime SubmitTime { get; set; }
 
-        public long SubmitTimeInUnix => SubmitTime.ToUnixUTCTime();
-
         public string Content { get; set; }
     }
 
     public class CommentMinimal
     {    
         public string Content { get; set; }
+    }
+
+    public class CommentListViewModel
+    {
+        public PagingInfo PagingInfo { get; set; }
+        
+        public IEnumerable<CommentViewModel> List { get; set; }
     }
 
 

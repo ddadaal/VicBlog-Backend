@@ -7,12 +7,15 @@ using VicBlogServer.Models;
 
 namespace VicBlogServer.Data
 {
-    public class ArticleTagDataController :
-        DefaultCrudDataController<ArticleTagModel, int>,
-        ITagDataService
+    public class ArticleTagDataController : DefaultCrudDataController<ArticleTagModel, int>, ITagDataService
     {
         public ArticleTagDataController(BlogContext context)
             : base(context, context.ArticleTags) { }
+
+        public IEnumerable<string> GetAllTags()
+        {
+            return dbSet.Select(x => x.Tag).Distinct();
+        }
 
     }
 }

@@ -5,11 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using VicBlogServer.Data;
 using VicBlogServer.DataService;
 using VicBlogServer.Filters;
 using VicBlogServer.Models;
+using VicBlogServer.Models.ArticleFilter;
+using VicBlogServer.Models.ListOrder;
 using VicBlogServer.Utils;
 using VicBlogServer.ViewModels;
 using VicBlogServer.ViewModels.Dto;
@@ -22,13 +26,16 @@ namespace VicBlogServer.Controllers
     {
         [HttpGet]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(List<ArticleBriefViewModel>), description: "Filters articles")]
-        public abstract Task<IActionResult> GetArticles();
+        [SwaggerResponse(200, type: typeof(ArticleListViewModel), description: "Filters articles")]
+        public abstract Task<IActionResult> GetArticles
+            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ListOrder? order);
 
         [HttpGet("Filter")]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(List<ArticleBriefViewModel>), description: "Filters articles")]
-        public abstract Task<IActionResult> Filter([FromQuery]ArticleFiler filter);
+        [SwaggerResponse(200, type: typeof(ArticleListViewModel), description: "Filters articles")]
+        public abstract Task<IActionResult> Filter
+        ([FromQuery] ArticleFilterViewModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
+            [FromQuery] ListOrder? order);
 
 
         [HttpGet("Tags")]
@@ -39,9 +46,9 @@ namespace VicBlogServer.Controllers
         [HttpGet("{articleId}")]
         [ArticleExists]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(ArticleModel),description: "Gets an Article from articleId.")]
+        [SwaggerResponse(200, type: typeof(ArticleModel), description: "Gets an Article from articleId.")]
         [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "Article id doesn't exist.")]
-        public abstract Task<IActionResult> GetAnArticle([FromRoute]int articleId);
+        public abstract Task<IActionResult> GetAnArticle([FromRoute] int articleId);
 
 
         [HttpDelete("{articleId}")]
@@ -51,7 +58,7 @@ namespace VicBlogServer.Controllers
         [SwaggerResponse(200, description: "Deletion has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
         [SwaggerResponse(403, description: "Not enough permission. At least Admin")]
-        public abstract Task<IActionResult> DeleteAnArticle([FromRoute]int articleId);
+        public abstract Task<IActionResult> DeleteAnArticle([FromRoute] int articleId);
 
         [HttpPatch("{articleId}")]
         [SwaggerOperation]
@@ -59,68 +66,74 @@ namespace VicBlogServer.Controllers
         [Authorize(Roles = Role.Admin)]
         [SwaggerResponse(200, description: "Patch/Update has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
-        public abstract Task<IActionResult> PatchAnArticle([FromRoute]int articleId, [FromBody]ArticleMinimal article);
+        public abstract Task<IActionResult>
+            PatchAnArticle([FromRoute] int articleId, [FromBody] ArticleMinimal article);
 
         [HttpPost]
         [SwaggerOperation]
         [Authorize(Roles = Role.Admin)]
-        [SwaggerResponse(200, description: "Creation has been done.")]
+        [SwaggerResponse(201, typeof(int), description: "Creation has been done.")]
         [SwaggerResponse(401, description: "Not authorized.")]
-        [SwaggerResponse(403, description: "Not enough permission. At least Admin")]
-        public abstract Task<IActionResult> CreateAnArticle([FromBody]ArticleMinimal article);
+        [SwaggerResponse(403, description: "Not enough permission. Need Admin")]
+        public abstract Task<IActionResult> CreateAnArticle([FromBody] ArticleMinimal article);
     }
 
     public class ArticlesController : ArticlesControllerSpec
     {
         private readonly IArticleDataService articleService;
-        private readonly ILikeDataService likeService;
         private readonly ITagDataService tagService;
-        private readonly ICommentDataService commentService;
 
-        public ArticlesController(IArticleDataService articleService, ILikeDataService likeService, ITagDataService tagService, ICommentDataService commentService)
+        public ArticlesController(IArticleDataService articleService, ITagDataService tagService)
         {
             this.articleService = articleService;
-            this.likeService = likeService;
             this.tagService = tagService;
-            this.commentService = commentService;
+        }
+
+        private static ArticleListViewModel ToListViewModel(IEnumerable<ArticleBriefViewModel> list, int? pageNumber,
+            int? pageSize)
+        {
+            var paged = list.Page(pageNumber, pageSize);
+
+            var articleListVM = new ArticleListViewModel()
+            {
+                PagingInfo = paged.ToPagingInfo(),
+                List = paged.List
+            };
+
+            return articleListVM;
         }
 
         public override async Task<IActionResult> CreateAnArticle([FromBody] ArticleMinimal article)
         {
             var now = DateTime.UtcNow;
-            ArticleModel newArticle = new ArticleModel()
+            var newArticle = new ArticleModel()
             {
                 Content = article.Content,
                 CreateTime = now,
                 LastEditedTime = now,
                 Title = article.Title,
-                Username = HttpContext.User.Identity.Name
+                Username = HttpContext.User.Identity.Name,
+                Tags = article.Tags.Select(x => new ArticleTagModel()
+                {
+                    Tag = x
+                }).ToList()
             };
 
             articleService.Add(newArticle);
-
             await articleService.SaveChangesAsync();
 
-            var id = newArticle.Id;
+            var id = newArticle.ArticleId;
 
-            tagService.AddRange(article.Tags.Select(x => new ArticleTagModel()
-            {
-                ArticleId = id,
-                Tag = x
-            }));
-
-            await articleService.SaveChangesAsync();
-
-            return Created($"api/Articles/{id}", "");
-            
+            return Created($"api/Articles/{id}", id);
         }
 
         public override async Task<IActionResult> DeleteAnArticle([FromRoute] int articleId)
         {
+//            var article = await articleService.FindAFullyLoadArticleAsync(articleId);
+//            article.Tags.Clear();
+//            article.Comments.Clear();
+//            article.Likes.Clear();
             await articleService.RemoveAsync(articleId);
-
-            var ids = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
-            tagService.RemoveRange(ids);
 
             await articleService.SaveChangesAsync();
 
@@ -129,118 +142,91 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> GetAnArticle([FromRoute] int articleId)
         {
-            ArticleModel articleModel = await articleService.FindByIdAsync(articleId);
-            var tags = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Tag);
-            var likes = likeService.Raw.Where(x => x.ArticleId == articleId)
-                .Select(x => new ArticleLikeViewModel()
-                {
-                    LikeTime = x.LikeTime,
-                    Username = x.Username
-                });
-
+            var articleModel = await articleService.FindAFullyLoadArticleAsync(articleId);
             return Json(new ArticleViewModel()
             {
-                Id = articleModel.Id,
+                Id = articleModel.ArticleId,
                 Content = articleModel.Content,
                 CreateTime = articleModel.CreateTime,
                 LastEditedTime = articleModel.LastEditedTime,
-                Likes = likes,
-                Tags = tags,
+                Tags = articleModel.Tags.Select(x => x.Tag),
                 Title = articleModel.Title,
-                Username = articleModel.Username
+                Username = articleModel.Username,
             });
-
-
         }
 
-        public override async Task<IActionResult> Filter([FromQuery]ArticleFiler filter)
+        public override async Task<IActionResult> Filter
+        ([FromQuery] ArticleFilterViewModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
+            [FromQuery] ListOrder? order)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
-            
-            var articles = from article in articleService.Raw
-                           where (filter.TitleText != null) ||
-                                (article.Title.Contains(filter.TitleText))
-                           where (filter.CreatedTimeRange != null) ||
-                                (filter.CreatedTimeRange[0].ToLocalDateTime() <= article.CreateTime
-                                    && article.CreateTime <= filter.CreatedTimeRange[1].ToLocalDateTime())
-                           where (filter.EditedTimeRange != null) ||
-                                (filter.EditedTimeRange[0].ToLocalDateTime() <= article.LastEditedTime
-                                    && article.LastEditedTime <= filter.EditedTimeRange[1].ToLocalDateTime())
+            var filterObj = new ArticleFilter(filter);
 
-                           join like in likeService.Raw on article.Id equals like.ArticleId into likes
-                           where likes.Count() >= filter.MinLike
+            var articles = filterObj.Filter(articleService.FullyLoadedRaw)
+                .Select(article => new ArticleBriefViewModel()
+            {
+                ArticleId = article.ArticleId,
+                CommentCount = article.Comments.Count(),
+                CreateTime = article.CreateTime,
+                LastEditedTime = article.LastEditedTime,
+                LikeCount = article.Likes.Count(),
+                Tags = article.Tags.Select(x => x.Tag),
+                Title = article.Title,
+                Username = article.Username
+            });
 
-                           join tag in tagService.Raw on article.Id equals tag.ArticleId into tags
-                           where (filter.Tags != null) || (filter.Tags.Intersect(tags.Select(x => x.Tag))).Any()
 
-                           join comment in commentService.Raw on article.Id equals comment.ArticleId into comments
-                           select new ArticleBriefViewModel()
-                           {
-                               Id = article.Id,
-                               CommentCount = comments.Count(),
-                               CreateTime = article.CreateTime,
-                               LastEditedTime = article.LastEditedTime,
-                               LikeCount = likes.Count(),
-                               Tags = tags.Select(x => x.Tag),
-                               Title = article.Title,
-                               Username = article.Username
-                           };
-            return Json(articles);
+            return Json(ToListViewModel(articles, pageNumber, pageSize));
         }
 
-        public override async Task<IActionResult> GetArticles()
+
+        public override async Task<IActionResult> GetArticles
+            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ListOrder? order)
         {
+            var articles = from article in articleService.FullyLoadedRaw
+                select new ArticleBriefViewModel()
+                {
+                    ArticleId = article.ArticleId,
+                    CreateTime = article.CreateTime,
+                    LastEditedTime = article.LastEditedTime,
+                    Tags = article.Tags.Select(x => x.Tag),
+                    Title = article.Title,
+                    Username = article.Username,
+                    CommentCount = article.Comments.Count(),
+                    LikeCount = article.Likes.Count()
+                };
 
-            var articles = from article in articleService.Raw
-                           join like in likeService.Raw on article.Id equals like.ArticleId into likes
-                           join tag in tagService.Raw on article.Id equals tag.ArticleId into tags
-                           join comment in commentService.Raw on article.Id equals comment.ArticleId into comments
-                           select new ArticleBriefViewModel()
-                           {
-                               Id = article.Id,
-                               CommentCount = comments.Count(),
-                               CreateTime = article.CreateTime,
-                               LastEditedTime = article.LastEditedTime,
-                               LikeCount = likes.Count(),
-                               Tags = tags.Select(x => x.Tag),
-                               Title = article.Title,
-                               Username = article.Username
-                           };
-
-            return Json(articles);
+            return Json(ToListViewModel(articles, pageNumber, pageSize));
         }
 
         public override async Task<IActionResult> GetTags()
         {
-            return Json(tagService.Raw.Select(x => x.Tag).Distinct());
+            return Json(tagService.GetAllTags());
         }
 
-        public override async Task<IActionResult> PatchAnArticle([FromRoute] int articleId, [FromBody] ArticleMinimal article)
+        public override async Task<IActionResult> PatchAnArticle([FromRoute] int articleId,
+            [FromBody] ArticleMinimal article)
         {
-            var existentArticle = await articleService.FindByIdAsync(articleId);
+            var existentArticle = await articleService.FindAFullyLoadArticleAsync(articleId);
 
             existentArticle.Content = article.Content;
             existentArticle.Title = article.Title;
             existentArticle.LastEditedTime = DateTime.UtcNow;
-            articleService.Update(existentArticle);
 
-            var existentTagIds = tagService.Raw.Where(x => x.ArticleId == articleId).Select(x => x.Id);
-            tagService.RemoveRange(existentTagIds);
+            existentArticle.Tags.Clear();
 
-            tagService.AddRange(article.Tags.Select(tag => new ArticleTagModel()
+            existentArticle.Tags.AddRange(article.Tags.Select(tag => new ArticleTagModel()
             {
-                ArticleId = articleId,
+                Article = existentArticle,
                 Tag = tag
             }));
-
             await articleService.SaveChangesAsync();
 
             return Created($"api/Article/{articleId}", "");
-
         }
     }
 }

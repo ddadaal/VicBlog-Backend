@@ -8,5 +8,6 @@ namespace VicBlogServer.DataService
 {
     public interface ITagDataService : ICrudDataService<ArticleTagModel, int>
     {
+        IEnumerable<string> GetAllTags();
     }
 }

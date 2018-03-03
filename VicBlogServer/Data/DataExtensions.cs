@@ -11,5 +11,6 @@ namespace VicBlogServer.Data
 {
     public static class DataExtensions
     {
+
     }
 }

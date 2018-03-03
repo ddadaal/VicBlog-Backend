@@ -9,10 +9,10 @@ using VicBlogServer.Models;
 namespace VicBlogServer.Data
 {
     public class DefaultCrudDataController<D, K>  : ICrudDataService<D, K>
-        where D: class, ISingleKey<K> where K: IEquatable<K>
+        where D: class where K: IEquatable<K>
     {
-        private readonly BlogContext context;
-        private readonly DbSet<D> dbSet;
+        protected readonly BlogContext context;
+        protected readonly DbSet<D> dbSet;
 
         public DefaultCrudDataController(BlogContext context, DbSet<D> dbSet)
         {
@@ -22,31 +22,38 @@ namespace VicBlogServer.Data
 
         public IQueryable<D> Raw => dbSet;
 
-        public void Add(D d)
+        public virtual void Add(D d)
         {
             dbSet.Add(d);
         }
 
-        public void AddRange(IEnumerable<D> data)
+        public virtual void AddRange(IEnumerable<D> data)
         {
             dbSet.AddRange(data);
         }
 
-        public async Task<D> FindByIdAsync(K id)
+        public async Task<bool> IdExistsAsync(K id)
+        {
+            return (await dbSet.FindAsync(id)) != null;
+        }
+
+        public virtual async Task<D> FindByIdAsync(K id)
         {
             return await dbSet.FindAsync(id);
         }
 
-        public async Task RemoveAsync(K id)
+        public virtual async Task RemoveAsync(K id)
         {
             dbSet.Remove(await FindByIdAsync(id));
         }
 
-        public void RemoveRange(IEnumerable<K> ids)
+        public virtual Task RemoveWhereAsync(Func<D, bool> condition)
         {
-            var entities = dbSet.Where(x => ids.Contains(x.Id));
-            dbSet.RemoveRange(entities);
+            var data = dbSet.Where(condition);
+            dbSet.RemoveRange(data);
+            return Task.CompletedTask;
         }
+
 
         public async Task SaveChangesAsync()
         {

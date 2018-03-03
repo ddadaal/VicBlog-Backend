@@ -9,14 +9,8 @@ using Xunit;
 
 namespace VicBlogServer.Test
 {
-    public class ArticleControllerTest
+    public class ArticleOperationTest
     {
-
-        private ArticlesController controller;
-
-        public ArticleControllerTest()
-        {
-        }
 
         [Fact]
         public void Test()

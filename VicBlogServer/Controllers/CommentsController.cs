@@ -22,7 +22,7 @@ namespace VicBlogServer.Controllers
         [Authorize]
         [ArticleExists]
         [SwaggerOperation]
-        [SwaggerResponse(201, description: "Comment has been created.")]
+        [SwaggerResponse(201, typeof(int), description: "Comment has been created.")]
         [SwaggerResponse(401, description: "Not logged in.")]
         [SwaggerResponse(404, typeof(StandardErrorDto), description: "Article id is not valid.")]
         public abstract Task<IActionResult> AddComment([FromQuery]int articleId, [FromBody]CommentMinimal comment);
@@ -39,9 +39,9 @@ namespace VicBlogServer.Controllers
         [HttpGet]
         [ArticleExists]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(List<CommentViewModel>), description: "Returns the comments of the article.")]
+        [SwaggerResponse(200, type: typeof(CommentListViewModel), description: "Returns the comments of the article.")]
         [SwaggerResponse(404, typeof(StandardErrorDto), description: "The article is not found.")]
-        public abstract Task<IActionResult> GetComments([FromQuery]int articleId);
+        public abstract Task<IActionResult> GetComments([FromQuery]int articleId, [FromQuery]int? pageNumber, [FromQuery]int? pageSize);
 
         [HttpGet("{commentId}")]
         [SwaggerOperation]
@@ -61,8 +61,8 @@ namespace VicBlogServer.Controllers
         {
             return new CommentViewModel()
             {
-                Id = model.Id,
-                ArticleId = model.ArticleId,
+                Id = model.CommentId,
+                ArticleId = model.Article.ArticleId,
                 Content = model.Content,
                 SubmitTime = model.SubmitTime,
                 Username = model.Username
@@ -78,9 +78,11 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> AddComment([FromQuery]int articleId, [FromBody] CommentMinimal comment)
         {
+            var article = await articleService.FindByIdAsync(articleId);
+            
             var newComment = new CommentModel()
             {
-                ArticleId = articleId,
+                Article = article,
                 Content = comment.Content,
                 SubmitTime = DateTime.UtcNow,
                 Username = HttpContext.User.Identity.Name
@@ -89,7 +91,7 @@ namespace VicBlogServer.Controllers
             commentService.Add(newComment);
             await commentService.SaveChangesAsync();
 
-            return Created($"api/Comments/{newComment.Id}", "");
+            return Created($"api/Comments/{newComment.CommentId}", newComment.CommentId);
         }
 
         public override async Task<IActionResult> GetComment([FromRoute] int id)
@@ -106,12 +108,17 @@ namespace VicBlogServer.Controllers
 
         }
 
-        public override async Task<IActionResult> GetComments([FromQuery] int articleId)
+        public override async Task<IActionResult> GetComments([FromQuery] int articleId, [FromQuery]int? pageNumber, [FromQuery]int? pageSize)
         {
-            var comments = from x in commentService.Raw
-                           where x.ArticleId == articleId
-                           select ModelToViewModel(x);
-            return Json(comments.ToList());
+            var comments = (await articleService.FindAFullyLoadArticleAsync(articleId)).Comments.Page(pageNumber, pageSize);
+
+            var result = new CommentListViewModel()
+            {
+                PagingInfo = comments.ToPagingInfo(),
+                List = comments.List.Select(ModelToViewModel)
+            };
+
+            return Json(result);
         }
 
         public override async Task<IActionResult> RemoveComment([FromQuery] int commentId)

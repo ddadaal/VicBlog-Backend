@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Swashbuckle.AspNetCore.Swagger;
 using VicBlogServer.Configs;
@@ -57,8 +58,29 @@ namespace VicBlogServer
             services.AddApplicationInsightsTelemetry(Configuration);
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "VicBlog API", Version = "0.5.0" });
-                c.AddSecurityDefinition("JWT Bearer", new ApiKeyScheme() { In = "header", Description = "Please insert JWT with \"Bearer\" into field", Name = "Authorization", Type = "apiKey" });
+                c.SwaggerDoc("v1", new Info
+                {
+                    Title = Configuration["ApiInfo:Title"],
+                    Version = Configuration["ApiInfo:Version"],
+                    Description = Configuration["ApiInfo:Description"],
+                    Contact = new Contact
+                    {
+                        Name = Configuration["ApiInfo:Contact:Name"],
+                        Email = Configuration["ApiInfo:Contact:Email"]
+                    },
+                    License = new License
+                    {
+                        Name = "Apache 2.0",
+                        Url = "http://www.apache.org/licenses/LICENSE-2.0.html"
+                    }
+                });
+                c.AddSecurityDefinition("JWT Bearer", 
+                    new ApiKeyScheme() {
+                        In = "header",
+                        Description = "Please insert JWT with \"Bearer\" into field",
+                        Name = "Authorization",
+                        Type = "apiKey"
+                    });
             });
             services.AddCors();
 
@@ -113,6 +135,10 @@ namespace VicBlogServer
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                options.SerializerSettings.Converters.Add(new StringEnumConverter()
+                {
+                    CamelCaseText = false
+                });
             });
 
         }

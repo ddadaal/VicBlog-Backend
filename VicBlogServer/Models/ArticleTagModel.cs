@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace VicBlogServer.Models
 {
-    public class ArticleTagModel : ISingleKey<int>
+    public class ArticleTagModel
     {
         [Key]
-        public int Id { get; set; }
+        public int TagId { get; set; }
 
-        public int ArticleId { get; set; }
+        [Required]
+        public ArticleModel Article { get; set; }
 
         public string Tag { get; set; }
     }

@@ -6,16 +6,15 @@ using System.Threading.Tasks;
 
 namespace VicBlogServer.Models
 {
-    public class ArticleLikeModel : ISingleKey<int>
+    public class ArticleLikeModel
     {
-        [Key]
-        public int Id { get; set; }
+        [Key] public int LikeId { get; set; }
 
-        public int ArticleId { get; set; }
+        [Required]
+        public ArticleModel Article { get; set; }
 
         public string Username { get; set; }
 
         public DateTime LikeTime { get; set; }
-
     }
 }

@@ -8,10 +8,10 @@ using VicBlogServer.Utils;
 
 namespace VicBlogServer.Models
 {
-    public class ArticleModel : ISingleKey<int>
+    public class ArticleModel
     {
         [Key]
-        public int Id { get; set; }
+        public int ArticleId { get; set; }
 
         public string Username { get; set; }
 
@@ -22,6 +22,12 @@ namespace VicBlogServer.Models
         public string Title { get; set; }
 
         public string Content { get; set; }
+        
+        public List<ArticleTagModel> Tags { get; set; }
+        
+        public List<ArticleLikeModel> Likes { get; set; }
+        
+        public List<CommentModel> Comments { get;set;  }
     }
 
 

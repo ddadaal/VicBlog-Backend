@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using VicBlogServer.DataService;
 using VicBlogServer.Filters;
@@ -29,8 +30,16 @@ namespace VicBlogServer.Controllers
         [ArticleExists]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(List<ArticleLikeViewModel>), description: "Returns like history of the articleId.")]
-        [SwaggerResponse(404, description: "article id doesn't exist.")]
+        [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "article id doesn't exist.")]
         public abstract Task<IActionResult> GetLikeHistory([FromQuery]int articleId);
+
+        [HttpGet("DidLike")]
+        [ArticleExists]
+        [SwaggerOperation]
+        [Authorize]
+        [SwaggerResponse(200, type: typeof(bool), description: "Returns whether current user has liked the article.")]
+        [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "article id doesn't exist.")]
+        public abstract Task<IActionResult> DidALikeTheArticle([FromQuery]int articleId);
 
         [HttpPost]
         [Authorize]
@@ -68,61 +77,65 @@ namespace VicBlogServer.Controllers
         {
             var username = HttpContext.User.Identity.Name;
 
-            if (likeService.Raw.Where(x => x.ArticleId == articleId && x.Username == username).Any())
+            var article = await articleDataService.FindAFullyLoadArticleAsync(articleId);
+
+            if (likeService.Raw.Any(x => x.Article == article))
             {
                 return StatusCode(StatusCodes.Status409Conflict);
             }
-
+           
             var like = new ArticleLikeModel()
             {
                 LikeTime = DateTime.UtcNow,
                 Username = username,
-                ArticleId = articleId
+                Article = article
             };
 
             likeService.Add(like);
             await likeService.SaveChangesAsync();
 
-            return Json(Count(articleId));
+            return Json(await CountAsync(articleId));
 
         }
 
         public override async Task<IActionResult> GetLikeCount([FromQuery] int articleId)
         {
-            return Json(Count(articleId));
+            return Json(await CountAsync(articleId));
         }
 
         public override async Task<IActionResult> GetLikeHistory([FromQuery] int articleId)
         {
 
-            var history = likeService.Raw.Select(x => new ArticleLikeViewModel()
-            {
-                LikeTime = x.LikeTime,
-                Username = x.Username
-            });
-
-            return Json(history);
+            return Json(likeService.Raw
+                .Where(x => x.Article.ArticleId == articleId)
+                .Select(x => new ArticleLikeViewModel()
+                {
+                    Username = x.Username,
+                    LikeTime = x.LikeTime
+                }));
         }
 
-        private int Count(int articleId)
+        private async Task<int> CountAsync(int articleId)
         {
-            return likeService.Raw.Where(x => x.ArticleId == articleId).Count();
+            return likeService.Raw.Count(x => x.Article.ArticleId == articleId);
         }
 
         public override async Task<IActionResult> RemoveALike([FromQuery] int articleId)
         {
             var username = HttpContext.User.Identity.Name;
 
-            var like = likeService.Raw.Where(x => x.ArticleId == articleId && x.Username == username).SingleOrDefault();
-            if (like == null)
-            {
-                return BadRequest();
-            }
-
-            await likeService.RemoveAsync(like.Id);
+            await likeService.RemoveWhereAsync(x => x.Article.ArticleId == articleId && x.Username == username);
             await likeService.SaveChangesAsync();
 
-            return Json(Count(articleId));
+            return Json(likeService.Raw.Count(x => x.Article.ArticleId == articleId));
+        }
+
+        public override async Task<IActionResult> DidALikeTheArticle([FromQuery] int articleId)
+        {
+            var username = HttpContext.User.Identity.Name;
+            
+            return Json(likeService.Raw.Any(x => 
+                x.Article.ArticleId == articleId && x.Username == username));
         }
     }
 

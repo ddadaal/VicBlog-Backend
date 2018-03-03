@@ -11,7 +11,7 @@ namespace VicBlogServer.DataService
     /// </summary>
     /// <typeparam name="D">Data type</typeparam>
     /// <typeparam name="K">Key type</typeparam>
-    public interface ICrudDataService<D, K> where D: class, ISingleKey<K> where K: IEquatable<K>
+    public interface ICrudDataService<D, K> where D: class where K: IEquatable<K>
     {
         /// <summary>
         /// Gets the raw IQueryable for advanced query.
@@ -32,6 +32,8 @@ namespace VicBlogServer.DataService
         /// <returns>Nothing. Use this as an async method.</returns>
         void AddRange(IEnumerable<D> data);
 
+        Task<bool> IdExistsAsync(K id);
+
         /// <summary>
         /// Finds an entity with key. Null will be returned if not found.
         /// </summary>
@@ -48,11 +50,11 @@ namespace VicBlogServer.DataService
         Task RemoveAsync(K id);
 
         /// <summary>
-        /// Removes a range of data.
+        /// Removes data which satifies the condition.
         /// </summary>
-        /// <param name="ids">all the ids</param>
+        /// <param name="condition">all the condition</param>
         /// <returns></returns>
-        void RemoveRange(IEnumerable<K> ids);
+        Task RemoveWhereAsync(Func<D, bool> condition);
 
         /// <summary>
         /// Updates an entity.

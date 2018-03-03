@@ -31,7 +31,7 @@ namespace VicBlogServer.Controllers
 
         [HttpPost("Register")]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(UserLoginDto), description: "Login successful. Returns token, username, registerTime and role.")]
+        [SwaggerResponse(201, type: typeof(UserLoginDto), description: "Login successful. Returns token, username, registerTime and role.")]
         [SwaggerResponse(409, type: typeof(StandardErrorDto), description: "Username already exists.")]
         [SwaggerResponse(400, type: typeof(MultipleErrorsDto), description: "Other errors occurred.")]
         public abstract Task<IActionResult> Register([FromQuery]UserRegisterDto model);
@@ -98,7 +98,7 @@ namespace VicBlogServer.Controllers
 
         }
 
-        public override async Task<IActionResult> Register([FromQuery]UserRegisterDto model)
+        public override async Task<IActionResult> Register([FromBody]UserRegisterDto model)
         {
             var username = model.Username;
             var result = await accountService.RegisterAsync(username, model.Password);
@@ -106,7 +106,7 @@ namespace VicBlogServer.Controllers
             if (result.Succeeded)
             {
                 var role = await accountService.GetRoleAsync(username);
-                return Json(new UserLoginResponseDto()
+                return Created($"api/Account/{username}", new UserLoginResponseDto()
                 {
                     Token = Models.UserModel.GenerateToken(username, role),
                     Role = role,
@@ -116,7 +116,11 @@ namespace VicBlogServer.Controllers
             {
                 if (result.ContainsDuplicateUsernameError)
                 {
-                    return StatusCode(StatusCodes.Status409Conflict);
+                    return StatusCode(StatusCodes.Status409Conflict, new StandardErrorDto()
+                    {
+                        Code = "UsernameConflict",
+                        Description = "Username has been token."
+                    });
                 }
                 else
                 {
