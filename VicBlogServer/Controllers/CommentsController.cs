@@ -130,7 +130,7 @@ namespace VicBlogServer.Controllers
             }
 
             var username = HttpContext.User.Identity.Name;
-            if (username != comment.Username && await userService.GetRoleAsync(username) != Role.Admin)
+            if (username != comment.Username || await userService.GetRoleAsync(username) != Role.Admin)
             {
                 return Forbid();
             }

@@ -15,7 +15,7 @@ namespace VicBlogServer.Controllers
 
     public static class Paging
     {
-        public const int DefaultPageSize = 1;
+        private const int DefaultPageSize = 10;
 
         public static PagingResult<T> Page<T>(this IEnumerable<T> list, int? pageNumber, int? pageSize)
         {
@@ -24,14 +24,14 @@ namespace VicBlogServer.Controllers
             var actualPageNumber = pageNumber.GetValueOrDefault(1);
 
             var totalPageNumber = (int)Math.Ceiling((double)totalCount / actualPageSize);
-            var paged = list.Skip(actualPageSize * (actualPageNumber-1)).Take(actualPageSize);
+            var pagedList = list.Skip(actualPageSize * (actualPageNumber-1)).Take(actualPageSize);
             return new PagingResult<T>()
             {
                 CurrentPageNumber = actualPageNumber,
                 TotalCount = totalCount,
                 PageSize = actualPageSize,
                 TotalPageNumber = totalPageNumber,
-                List = paged
+                List = pagedList
             };
         }
     }

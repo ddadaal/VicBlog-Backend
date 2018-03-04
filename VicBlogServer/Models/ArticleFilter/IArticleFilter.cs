@@ -15,11 +15,11 @@ namespace VicBlogServer.Models.ArticleFilter
     {
         public List<IArticleFilter> Filters { get; set; } = new List<IArticleFilter>();
 
-        public ArticleFilter(ArticleFilterViewModel viewModel = null)
+        public ArticleFilter(ArticleFilterModel model = null)
         {
-            if (viewModel != null)
+            if (model != null)
             {
-                AddFromViewModel(viewModel);
+                AddFromViewModel(model);
             }
         }
 
@@ -29,27 +29,27 @@ namespace VicBlogServer.Models.ArticleFilter
             return models;
         }
 
-        public void AddFromViewModel(ArticleFilterViewModel viewModel)
+        public void AddFromViewModel(ArticleFilterModel model)
         {
             Filters.Add(new LikesArticleFilter()
             {
-                MaxLike = viewModel.MaxLike,
-                MinLike = viewModel.MinLike
+                MaxLike = model.MaxLike,
+                MinLike = model.MinLike
             });
             Filters.Add(new TagsArticleFilter()
             {
-                TagsCondition = viewModel.Tags
+                TagsCondition = model.Tags
             });
             Filters.Add(new TitleTextArticleFilter()
             {
-                TitleText = viewModel.TitleText
+                TitleText = model.TitleText
             });
             Filters.Add(new TimeArticleFilter()
             {
-                CreatedTimeBegin = viewModel.CreatedTimeBegin,
-                CreatedTimeEnd = viewModel.CreateTimeEnd,
-                EditedTimeBegin = viewModel.EditedTimeBegin,
-                EditedTimeEnd = viewModel.EditedTimeEnd
+                CreatedTimeBegin = model.CreatedTimeBegin,
+                CreatedTimeEnd = model.CreateTimeEnd,
+                EditedTimeBegin = model.EditedTimeBegin,
+                EditedTimeEnd = model.EditedTimeEnd
             });
         }
         

@@ -9,8 +9,7 @@ namespace VicBlogServer.Data
 {
     public class ArticleTagDataController : DefaultCrudDataController<ArticleTagModel, int>, ITagDataService
     {
-        public ArticleTagDataController(BlogContext context)
-            : base(context, context.ArticleTags) { }
+        public ArticleTagDataController(BlogContext context) : base(context, context.ArticleTags) { }
 
         public IEnumerable<string> GetAllTags()
         {

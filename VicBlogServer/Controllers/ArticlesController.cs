@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,7 @@ using VicBlogServer.DataService;
 using VicBlogServer.Filters;
 using VicBlogServer.Models;
 using VicBlogServer.Models.ArticleFilter;
-using VicBlogServer.Models.ListOrder;
+using VicBlogServer.Models.ArticleListOrder;
 using VicBlogServer.Utils;
 using VicBlogServer.ViewModels;
 using VicBlogServer.ViewModels.Dto;
@@ -28,14 +29,14 @@ namespace VicBlogServer.Controllers
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(ArticleListViewModel), description: "Filters articles")]
         public abstract Task<IActionResult> GetArticles
-            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ListOrder? order);
+            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ArticleListOrder? order);
 
         [HttpGet("Filter")]
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(ArticleListViewModel), description: "Filters articles")]
         public abstract Task<IActionResult> Filter
-        ([FromQuery] ArticleFilterViewModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
-            [FromQuery] ListOrder? order);
+        ([FromQuery] ArticleFilterModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
+            [FromQuery] ArticleListOrder? order);
 
 
         [HttpGet("Tags")]
@@ -94,13 +95,13 @@ namespace VicBlogServer.Controllers
         {
             var paged = list.Page(pageNumber, pageSize);
 
-            var articleListVM = new ArticleListViewModel()
+            var articleListVm = new ArticleListViewModel()
             {
                 PagingInfo = paged.ToPagingInfo(),
                 List = paged.List
             };
 
-            return articleListVM;
+            return articleListVm;
         }
 
         public override async Task<IActionResult> CreateAnArticle([FromBody] ArticleMinimal article)
@@ -129,10 +130,6 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> DeleteAnArticle([FromRoute] int articleId)
         {
-//            var article = await articleService.FindAFullyLoadArticleAsync(articleId);
-//            article.Tags.Clear();
-//            article.Comments.Clear();
-//            article.Likes.Clear();
             await articleService.RemoveAsync(articleId);
 
             await articleService.SaveChangesAsync();
@@ -145,19 +142,19 @@ namespace VicBlogServer.Controllers
             var articleModel = await articleService.FindAFullyLoadArticleAsync(articleId);
             return Json(new ArticleViewModel()
             {
-                Id = articleModel.ArticleId,
+                ArticleId = articleModel.ArticleId,
                 Content = articleModel.Content,
                 CreateTime = articleModel.CreateTime,
                 LastEditedTime = articleModel.LastEditedTime,
                 Tags = articleModel.Tags.Select(x => x.Tag),
                 Title = articleModel.Title,
-                Username = articleModel.Username,
+                Author = articleModel.Username,
             });
         }
 
         public override async Task<IActionResult> Filter
-        ([FromQuery] ArticleFilterViewModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
-            [FromQuery] ListOrder? order)
+        ([FromQuery] ArticleFilterModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
+            [FromQuery] ArticleListOrder? order)
         {
             if (!ModelState.IsValid)
             {
@@ -176,7 +173,7 @@ namespace VicBlogServer.Controllers
                 LikeCount = article.Likes.Count(),
                 Tags = article.Tags.Select(x => x.Tag),
                 Title = article.Title,
-                Username = article.Username
+                Author = article.Username
             });
 
 
@@ -185,9 +182,10 @@ namespace VicBlogServer.Controllers
 
 
         public override async Task<IActionResult> GetArticles
-            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ListOrder? order)
+            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ArticleListOrder? order)
         {
-            var articles = from article in articleService.FullyLoadedRaw
+            var orderedArticles = articleService.FullyLoadedRaw.OrderArticles(order);
+            var articles = from article in orderedArticles
                 select new ArticleBriefViewModel()
                 {
                     ArticleId = article.ArticleId,
@@ -195,7 +193,7 @@ namespace VicBlogServer.Controllers
                     LastEditedTime = article.LastEditedTime,
                     Tags = article.Tags.Select(x => x.Tag),
                     Title = article.Title,
-                    Username = article.Username,
+                    Author = article.Username,
                     CommentCount = article.Comments.Count(),
                     LikeCount = article.Likes.Count()
                 };
@@ -217,16 +215,13 @@ namespace VicBlogServer.Controllers
             existentArticle.Title = article.Title;
             existentArticle.LastEditedTime = DateTime.UtcNow;
 
-            existentArticle.Tags.Clear();
-
-            existentArticle.Tags.AddRange(article.Tags.Select(tag => new ArticleTagModel()
+            existentArticle.Tags = article.Tags.Select(tag => new ArticleTagModel()
             {
-                Article = existentArticle,
                 Tag = tag
-            }));
+            }).ToList();
             await articleService.SaveChangesAsync();
 
-            return Created($"api/Article/{articleId}", "");
+            return Created($"api/Article/{articleId}", existentArticle.ArticleId);
         }
     }
 }

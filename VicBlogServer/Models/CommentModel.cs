@@ -20,9 +20,6 @@ namespace VicBlogServer.Models
 
         public DateTime SubmitTime { get; set; }
 
-        [NotMapped]
-        public long SubmitTimeInUnix => SubmitTime.ToUnixUTCTime();
-
         public string Content { get; set; }
     }
 }

@@ -23,11 +23,11 @@ namespace VicBlogServer.Models
 
         public string Content { get; set; }
         
-        public List<ArticleTagModel> Tags { get; set; }
+        public ICollection<ArticleTagModel> Tags { get; set; }
         
-        public List<ArticleLikeModel> Likes { get; set; }
+        public ICollection<ArticleLikeModel> Likes { get; set; }
         
-        public List<CommentModel> Comments { get;set;  }
+        public ICollection<CommentModel> Comments { get;set;  }
     }
 
 

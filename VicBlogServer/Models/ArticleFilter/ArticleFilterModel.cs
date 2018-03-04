@@ -1,15 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using VicBlogServer.Models;
-using VicBlogServer.Utils;
 
-namespace VicBlogServer.ViewModels
+namespace VicBlogServer.Models.ArticleFilter
 {
-    public class ArticleFilterViewModel
+    public class ArticleFilterModel
     {
         public IEnumerable<string> Tags { get; set; }
 

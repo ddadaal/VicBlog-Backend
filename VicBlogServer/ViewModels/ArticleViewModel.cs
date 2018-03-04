@@ -8,9 +8,9 @@ namespace VicBlogServer.ViewModels
 {
     public class ArticleViewModel
     {
-        public int Id { get; set; }
+        public int ArticleId { get; set; }
 
-        public string Username { get; set; }
+        public string Author { get; set; }
 
         public DateTime CreateTime { get; set; }
 
@@ -35,7 +35,7 @@ namespace VicBlogServer.ViewModels
     {
         public int ArticleId { get; set; }
 
-        public string Username { get; set; }
+        public string Author { get; set; }
 
         public DateTime CreateTime { get; set; }
 

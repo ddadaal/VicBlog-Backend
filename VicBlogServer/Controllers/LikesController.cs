@@ -29,17 +29,17 @@ namespace VicBlogServer.Controllers
         [HttpGet("History")]
         [ArticleExists]
         [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(List<ArticleLikeViewModel>), description: "Returns like history of the articleId.")]
+        [SwaggerResponse(200, type: typeof(ArticleLikeHistoryViewModel), description: "Returns like history of the articleId.")]
         [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "article id doesn't exist.")]
         public abstract Task<IActionResult> GetLikeHistory([FromQuery]int articleId);
 
-        [HttpGet("DidLike")]
+        [HttpGet("QueryLiked")]
         [ArticleExists]
         [SwaggerOperation]
         [Authorize]
-        [SwaggerResponse(200, type: typeof(bool), description: "Returns whether current user has liked the article.")]
+        [SwaggerResponse(200, type: typeof(QueryLikedResultViewModel), description: "Returns whether current user has liked the article.")]
         [SwaggerResponse(404, type: typeof(StandardErrorDto), description: "article id doesn't exist.")]
-        public abstract Task<IActionResult> DidALikeTheArticle([FromQuery]int articleId);
+        public abstract Task<IActionResult> QueryLiked([FromQuery]int articleId);
 
         [HttpPost]
         [Authorize]
@@ -105,14 +105,20 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> GetLikeHistory([FromQuery] int articleId)
         {
-
-            return Json(likeService.Raw
+            var list = likeService.Raw
                 .Where(x => x.Article.ArticleId == articleId)
                 .Select(x => new ArticleLikeViewModel()
                 {
                     Username = x.Username,
                     LikeTime = x.LikeTime
-                }));
+                });
+            
+            
+            
+            return Json(new ArticleLikeHistoryViewModel()
+            {
+                List =  list
+            });
         }
 
         private async Task<int> CountAsync(int articleId)
@@ -130,12 +136,27 @@ namespace VicBlogServer.Controllers
             return Json(likeService.Raw.Count(x => x.Article.ArticleId == articleId));
         }
 
-        public override async Task<IActionResult> DidALikeTheArticle([FromQuery] int articleId)
+        public override async Task<IActionResult> QueryLiked([FromQuery] int articleId)
         {
             var username = HttpContext.User.Identity.Name;
-            
-            return Json(likeService.Raw.Any(x => 
-                x.Article.ArticleId == articleId && x.Username == username));
+
+            var like = await likeService.Raw.SingleOrDefaultAsync(x => x.Article.ArticleId == articleId && x.Username == username);
+
+            if (like == null)
+            {
+                return Json(new QueryLikedResultViewModel()
+                {
+                    DidLike = false
+                });
+            }
+            else
+            {
+                return Json(new QueryLikedResultViewModel()
+                {
+                    DidLike = true,
+                    LikeTime = like.LikeTime
+                });
+            }
         }
     }
 

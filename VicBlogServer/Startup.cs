@@ -135,10 +135,8 @@ namespace VicBlogServer
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                options.SerializerSettings.Converters.Add(new StringEnumConverter()
-                {
-                    CamelCaseText = false
-                });
+                options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                
             });
 
         }
