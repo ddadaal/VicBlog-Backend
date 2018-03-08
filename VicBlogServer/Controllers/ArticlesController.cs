@@ -87,8 +87,7 @@ namespace VicBlogServer.Controllers
         private static ArticleListViewModel ToListViewModel(IEnumerable<ArticleBriefViewModel> list, int? pageNumber,
             int? pageSize)
         {
-            
-            
+              
             var paged = list.Page(pageNumber, pageSize);
 
             var articleListVm = new ArticleListViewModel()
@@ -157,7 +156,7 @@ namespace VicBlogServer.Controllers
                 return BadRequest();
             }
 
-            var articles = articleService.FullyLoadedRaw.Filter(filter)
+            var articles = articleService.FullyLoadedRaw.ArticleListFilter(filter)
                 .Select(article => new ArticleBriefViewModel()
                 {
                     ArticleId = article.ArticleId,

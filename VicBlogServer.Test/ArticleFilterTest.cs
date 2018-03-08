@@ -15,7 +15,7 @@ namespace VicBlogServer.Test
     {
         private void AssertCount(ArticleFilterModel filter, int expected)
         {
-            Assert.Equal(expected, MockObjProvider.GetMockArticleModels().Filter(filter).Count());
+            Assert.Equal(expected, MockObjProvider.GetMockArticleModels().ArticleListFilter(filter).Count());
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace VicBlogServer.Test
                         
             AssertCount(new ArticleFilterModel()
             {
-                CreateTimeEnd = new DateTime(2018,3,7,9,0,0),
+                CreateTimeEnd = new DateTime(2017,3,7,9,0,0),
             },0);
         }
 

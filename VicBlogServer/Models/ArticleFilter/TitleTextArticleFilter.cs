@@ -11,7 +11,7 @@ namespace VicBlogServer.Models.ArticleFilter
         public IQueryable<ArticleModel> Filter(IQueryable<ArticleModel> models)
         {
             return from article in models
-                where article.Title.Contains(TitleText)
+                where TitleText == null || article.Title.Contains(TitleText)
                 select article;
         }
     }

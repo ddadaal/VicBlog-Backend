@@ -100,6 +100,11 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> Register([FromBody]UserRegisterDto model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            
             var username = model.Username;
             var result = await accountService.RegisterAsync(username, model.Password);
             

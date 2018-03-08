@@ -26,7 +26,10 @@ namespace VicBlogServer.Models.ArticleFilter
 
         public IQueryable<ArticleModel> Filter(IQueryable<ArticleModel> models)
         {
-            Filters.ForEach(filter => filter.Filter(models));
+            foreach (var filter in Filters)
+            {
+                models = filter.Filter(models);
+            }
             return models;
         }
 
@@ -57,15 +60,11 @@ namespace VicBlogServer.Models.ArticleFilter
        
     }
 
-    class A
-    {
-        
-    }
 
     public static class ArticleFilterExtension
     {
         
-        public static IQueryable<ArticleModel> Filter(this IQueryable<ArticleModel> models, ArticleFilterModel filter)
+        public static IQueryable<ArticleModel> ArticleListFilter(this IQueryable<ArticleModel> models, ArticleFilterModel filter)
         {
             return new ArticleFilter(filter).Filter(models);
         }
