@@ -8,9 +8,9 @@ namespace VicBlogServer.Models.ArticleFilter
     {
         public string TitleText { get; set; }
 
-        public IQueryable<ArticleModel> Filter(IQueryable<ArticleModel> model)
+        public IQueryable<ArticleModel> Filter(IQueryable<ArticleModel> models)
         {
-            return from article in model
+            return from article in models
                 where article.Title.Contains(TitleText)
                 select article;
         }

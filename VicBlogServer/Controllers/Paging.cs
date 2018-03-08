@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace VicBlogServer.Controllers
 {
@@ -20,8 +21,8 @@ namespace VicBlogServer.Controllers
         public static PagingResult<T> Page<T>(this IEnumerable<T> list, int? pageNumber, int? pageSize)
         {
             var totalCount = list.Count();
-            var actualPageSize = pageSize.GetValueOrDefault(DefaultPageSize);
-            var actualPageNumber = pageNumber.GetValueOrDefault(1);
+            var actualPageSize = pageSize ?? DefaultPageSize;
+            var actualPageNumber = pageNumber ?? 1;
 
             var totalPageNumber = (int)Math.Ceiling((double)totalCount / actualPageSize);
             var pagedList = list.Skip(actualPageSize * (actualPageNumber-1)).Take(actualPageSize);

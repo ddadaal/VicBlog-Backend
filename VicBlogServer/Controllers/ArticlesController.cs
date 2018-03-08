@@ -29,13 +29,7 @@ namespace VicBlogServer.Controllers
         [SwaggerOperation]
         [SwaggerResponse(200, type: typeof(ArticleListViewModel), description: "Filters articles")]
         public abstract Task<IActionResult> GetArticles
-            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ArticleListOrder? order);
-
-        [HttpGet("Filter")]
-        [SwaggerOperation]
-        [SwaggerResponse(200, type: typeof(ArticleListViewModel), description: "Filters articles")]
-        public abstract Task<IActionResult> Filter
-        ([FromQuery] ArticleFilterModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
+            ([FromQuery] ArticleFilterModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
             [FromQuery] ArticleListOrder? order);
 
 
@@ -93,6 +87,8 @@ namespace VicBlogServer.Controllers
         private static ArticleListViewModel ToListViewModel(IEnumerable<ArticleBriefViewModel> list, int? pageNumber,
             int? pageSize)
         {
+            
+            
             var paged = list.Page(pageNumber, pageSize);
 
             var articleListVm = new ArticleListViewModel()
@@ -152,8 +148,8 @@ namespace VicBlogServer.Controllers
             });
         }
 
-        public override async Task<IActionResult> Filter
-        ([FromQuery] ArticleFilterModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
+        public override async Task<IActionResult> GetArticles
+            ([FromQuery] ArticleFilterModel filter, [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
             [FromQuery] ArticleListOrder? order)
         {
             if (!ModelState.IsValid)
@@ -161,42 +157,19 @@ namespace VicBlogServer.Controllers
                 return BadRequest();
             }
 
-            var filterObj = new ArticleFilter(filter);
-
-            var articles = filterObj.Filter(articleService.FullyLoadedRaw)
+            var articles = articleService.FullyLoadedRaw.Filter(filter)
                 .Select(article => new ArticleBriefViewModel()
-            {
-                ArticleId = article.ArticleId,
-                CommentCount = article.Comments.Count(),
-                CreateTime = article.CreateTime,
-                LastEditedTime = article.LastEditedTime,
-                LikeCount = article.Likes.Count(),
-                Tags = article.Tags.Select(x => x.Tag),
-                Title = article.Title,
-                Author = article.Username
-            });
-
-
-            return Json(ToListViewModel(articles, pageNumber, pageSize));
-        }
-
-
-        public override async Task<IActionResult> GetArticles
-            ([FromQuery] int? pageNumber, [FromQuery] int? pageSize, [FromQuery] ArticleListOrder? order)
-        {
-            var orderedArticles = articleService.FullyLoadedRaw.OrderArticles(order);
-            var articles = from article in orderedArticles
-                select new ArticleBriefViewModel()
                 {
                     ArticleId = article.ArticleId,
+                    CommentCount = article.Comments.Count(),
                     CreateTime = article.CreateTime,
                     LastEditedTime = article.LastEditedTime,
+                    LikeCount = article.Likes.Count(),
                     Tags = article.Tags.Select(x => x.Tag),
                     Title = article.Title,
-                    Author = article.Username,
-                    CommentCount = article.Comments.Count(),
-                    LikeCount = article.Likes.Count()
-                };
+                    Author = article.Username
+                });
+
 
             return Json(ToListViewModel(articles, pageNumber, pageSize));
         }

@@ -13,10 +13,11 @@ namespace VicBlogServer.Models.ArticleFilter
     
     public class ArticleFilter
     {
-        public List<IArticleFilter> Filters { get; set; } = new List<IArticleFilter>();
+        private List<IArticleFilter> Filters { get; set; } = new List<IArticleFilter>();
 
         public ArticleFilter(ArticleFilterModel model = null)
         {
+
             if (model != null)
             {
                 AddFromViewModel(model);
@@ -29,7 +30,7 @@ namespace VicBlogServer.Models.ArticleFilter
             return models;
         }
 
-        public void AddFromViewModel(ArticleFilterModel model)
+        private void AddFromViewModel(ArticleFilterModel model)
         {
             Filters.Add(new LikesArticleFilter()
             {
@@ -56,5 +57,17 @@ namespace VicBlogServer.Models.ArticleFilter
        
     }
 
+    class A
+    {
+        
+    }
 
+    public static class ArticleFilterExtension
+    {
+        
+        public static IQueryable<ArticleModel> Filter(this IQueryable<ArticleModel> models, ArticleFilterModel filter)
+        {
+            return new ArticleFilter(filter).Filter(models);
+        }
+    }
 }
