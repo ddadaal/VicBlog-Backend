@@ -77,7 +77,7 @@ namespace VicBlogServer.Controllers
         {
             var username = HttpContext.User.Identity.Name;
 
-            var article = await articleDataService.FindAFullyLoadArticleAsync(articleId);
+            var article = await articleDataService.FindByIdAsync(articleId);
 
             if (likeService.Raw.Any(x => x.Article == article))
             {

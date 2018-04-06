@@ -15,7 +15,7 @@ namespace VicBlogServer.Test
     {
         private void AssertCount(ArticleFilterModel filter, int expected)
         {
-            Assert.Equal(expected, MockObjProvider.GetMockArticleModels().ArticleListFilter(filter).Count());
+            Assert.Equal(expected, MockObjProvider.GetMockArticleModels().FilterArticleList(filter).Count());
         }
 
         [Fact]

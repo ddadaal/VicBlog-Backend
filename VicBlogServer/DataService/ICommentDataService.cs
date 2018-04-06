@@ -8,6 +8,6 @@ namespace VicBlogServer.DataService
 {
     public interface ICommentDataService : ICrudDataService<CommentModel, int>
     {
-        
+        IQueryable<CommentModel> FindByArticleId(int articleId);
     }
 }

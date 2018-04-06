@@ -64,7 +64,7 @@ namespace VicBlogServer.Models.ArticleFilter
     public static class ArticleFilterExtension
     {
         
-        public static IQueryable<ArticleModel> ArticleListFilter(this IQueryable<ArticleModel> models, ArticleFilterModel filter)
+        public static IQueryable<ArticleModel> FilterArticleList(this IQueryable<ArticleModel> models, ArticleFilterModel filter)
         {
             return new ArticleFilter(filter).Filter(models);
         }

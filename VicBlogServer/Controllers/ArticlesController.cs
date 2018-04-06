@@ -101,7 +101,7 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> CreateAnArticle([FromBody] ArticleMinimal article)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var newArticle = new ArticleModel()
             {
                 Content = article.Content,
@@ -156,7 +156,9 @@ namespace VicBlogServer.Controllers
                 return BadRequest();
             }
 
-            var articles = articleService.FullyLoadedRaw.ArticleListFilter(filter)
+            var articles = articleService.FullyLoadedRaw
+                .FilterArticleList(filter)
+                .OrderArticles(order)
                 .Select(article => new ArticleBriefViewModel()
                 {
                     ArticleId = article.ArticleId,

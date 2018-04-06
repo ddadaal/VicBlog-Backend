@@ -30,7 +30,7 @@ namespace VicBlogServer.Controllers
         [HttpDelete]
         [Authorize]
         [SwaggerOperation]
-        [SwaggerResponse(200, description: "The comment has been removed.")]
+        [SwaggerResponse(200, description: "The comment has been removed. Returns the comment id.")]
         [SwaggerResponse(401, description: "Not logged in")]
         [SwaggerResponse(403, description: "not an admin && not the author of the comment")]
         [SwaggerResponse(404, description: "Comment id is not valid.")]
@@ -110,7 +110,10 @@ namespace VicBlogServer.Controllers
 
         public override async Task<IActionResult> GetComments([FromQuery] int articleId, [FromQuery]int? pageNumber, [FromQuery]int? pageSize)
         {
-            var comments = (await articleService.FindAFullyLoadArticleAsync(articleId)).Comments.Page(pageNumber, pageSize);
+
+            var comments = commentService.FindByArticleId(articleId)
+                .OrderByDescending(x => x.SubmitTime)
+                .Page(pageNumber, pageSize);
 
             var result = new CommentListViewModel()
             {
@@ -138,7 +141,7 @@ namespace VicBlogServer.Controllers
             await commentService.RemoveAsync(commentId);
             await commentService.SaveChangesAsync();
 
-            return Ok();
+            return Ok(commentId);
         }
     }
 }
