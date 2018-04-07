@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VicBlogServer.Models;
 
-namespace VicBlogServer.Test
+namespace VicBlogServer.Tests
 {
     public static class MockObjProvider
     {

@@ -4,6 +4,7 @@
     <IsPackable>false</IsPackable>
     <StartupObject>
     </StartupObject>
+    <AssemblyName>VicBlogServer.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.0" />

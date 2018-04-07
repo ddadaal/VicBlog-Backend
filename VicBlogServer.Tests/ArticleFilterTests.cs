@@ -9,9 +9,9 @@ using VicBlogServer.Models;
 using VicBlogServer.Models.ArticleFilter;
 using Xunit;
 
-namespace VicBlogServer.Test
+namespace VicBlogServer.Tests
 {
-    public class ArticleFilterTest
+    public class ArticleFilterTests
     {
         private void AssertCount(ArticleFilterModel filter, int expected)
         {

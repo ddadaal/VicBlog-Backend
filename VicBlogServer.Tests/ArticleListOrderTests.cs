@@ -6,9 +6,9 @@ using VicBlogServer.Models;
 using VicBlogServer.Models.ArticleListOrder;
 using Xunit;
 
-namespace VicBlogServer.Test
+namespace VicBlogServer.Tests
 {
-    public class ArticleListOrderTest
+    public class ArticleListOrderTests
     {
 ////                LastEditTimeLatestFirst,
 //        LastEditTimeEarliestFirst,
