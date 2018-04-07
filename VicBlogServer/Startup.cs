@@ -36,8 +36,7 @@ namespace VicBlogServer
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("Configs/appsettings.json")
-                .AddJsonFile($"Configs/appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile("Configs/appsettings.json");
 
 
             if (env.IsDevelopment())
@@ -90,6 +89,7 @@ namespace VicBlogServer
             });
 
             JwtConfig.Initialize(Configuration);
+            DataInitializer.RootPassword = Configuration["RootPassword"];
 
             services.AddIdentity<UserModel, Role>(options =>
                 {
@@ -130,6 +130,7 @@ namespace VicBlogServer
             services.AddScoped<ITagDataService, ArticleTagDataController>();
             services.AddScoped<ILikeDataService, ArticleLikeDataController>();
             services.AddScoped<ICommentDataService, CommentDataController>();
+            services.AddScoped<DataInitializer, DataInitializer>();
 
             services.AddMvc().AddJsonOptions(options =>
             {
@@ -142,7 +143,7 @@ namespace VicBlogServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, BlogContext context, UserManager<UserModel> userManager, RoleManager<Role> roleManager)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, DataInitializer dataInitializer)
         {
             if (env.IsDevelopment())
             {
@@ -155,10 +156,15 @@ namespace VicBlogServer
 
             app.UseMvc();
 
-            context.Database.EnsureCreated();
-
-            roleManager.CreateAsync(new Role(Role.Admin)).Wait();
-            roleManager.CreateAsync(new Role(Role.User)).Wait();
+            if (env.IsDevelopment())
+            {
+                dataInitializer.InitializeDev().Wait();
+            } else
+            {
+                dataInitializer.InitializeProduction().Wait();
+            }
+            
         }
+
     }
 }

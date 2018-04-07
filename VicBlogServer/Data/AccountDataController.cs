@@ -57,7 +57,7 @@ namespace VicBlogServer.Data
             if (result.Succeeded)
             {
                 var registeredUser = userManager.Users.SingleOrDefault(x => x.UserName == username);
-                await userManager.AddToRoleAsync(registeredUser, Role.User);
+                await userManager.AddToRoleAsync(registeredUser, roleName);
                 return new RegisterResult()
                 {
                     Succeeded = true,
