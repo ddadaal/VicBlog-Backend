@@ -1,9 +1,13 @@
 # VicBlog Backend App
 
-[<img src="https://viccrubs.visualstudio.com/_apis/public/build/definitions/6f539c45-1ee7-4ad9-8a5e-ff4c09b89258/6/badge"/>](https://viccrubs.visualstudio.com/VicBlogServer/_build/index?context=allDefinitions&path=%5C&definitionId=6&_a=completed)
+[<img src="https://viccrubs.visualstudio.com/_apis/public/build/definitions/6f539c45-1ee7-4ad9-8a5e-ff4c09b89258/8/badge"/>](https://viccrubs.visualstudio.com/VicBlogServer/_build/index?context=allDefinitions&path=%5C&definitionId=8&_a=completed)
 
-**This is WIP VicBlogServer acting as the backend of VicBlog.**
-**Previous/Lagecy version can be retrieved on `lagecy` branch.**
+**New VicBlog is now ONLINE!**
+
+Check it out!
+
+[Website](https://viccrubs.tk)
+[Backend Swagger](https://vicblogapi.azurewebsites.net/)
 
 ## Features
 
